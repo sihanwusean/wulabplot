@@ -1,0 +1,24 @@
+#' wulabplot: Standardized Scientific Plotting for Journal Publications
+#'
+#' @description
+#' The wulabplot package provides specialized themes and saving functions
+#' to ensure figures meet the requirements of high-impact journals.
+#' It enforces minimal 6 pt Arial fonts, 0.5 pt line weights, and consistent
+#' panel sizing across all lab publications.
+#'
+#' @section Main Functions:
+#' \itemize{
+#'   \item \code{\link{theme_wulab}}: Apply the lab-standard visual theme.
+#'   \item \code{\link{save_wulab}}: Export figures with forced panel dimensions.
+#'   \item \code{\link{show_color_qualitative}}: View 12 paired qualitative colors (inspired by traditional Chinese colors) and 3 grey colors. HEX codes are printed in the console.
+#'   \item \code{\link{show_color_sequential}}: View sequential colors, from the lightest Creamy Avocado (#d9ed92) to the deepest Moroccan Blue (#184e77), with the midpoint of Teal (#52b69a). Define the number of colors with the parameter n. HEX codes are printed in the console.
+#'   \item \code{\link{show_color_diverging}}: View diverging colors, from Copper Hopper (#bb3e03) to Deep Lagoon (#005f73), with the midpoint of Shalimar (#ffffbf). Define the number of colors with the parameter n. Odd numbers work best for a central midpoint. HEX codes are printed in the console.
+#' }
+#'
+#' @docType package
+#' @name wulabplot
+#' @import ggplot2
+#' @import grid
+#' @import gtable
+#' @import grDevices
+"_PACKAGE"
