@@ -9,3 +9,5 @@ License: MIT
 Encoding: UTF-8
 Imports: ggplot2, grid, gtable, grDevices
 RoxygenNote: 7.3.3
+URL: https://github.com/sihanwusean/wulabplot
+BugReports: https://github.com/sihanwusean/wulabplot/issues
