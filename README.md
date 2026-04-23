@@ -30,9 +30,9 @@ devtools::install_github("sihanwusean/wulabplot")
     library(wulabplot)
 
     ggplot(mtcars, aes(x = wt, y = mpg)) +
-    geom_point() +
-    labs(title = "Figure 1A", x = "Weight", y = "MPG") +
-    theme_wulab()
+        geom_point() +
+        labs(title = "Figure 1A", x = "Weight", y = "MPG") +
+        theme_wulab()
     ```
 
 1. Save with Forced Dimensions
