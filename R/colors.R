@@ -100,6 +100,9 @@ show_color_sequential <- function(n = 9) {
   for(i in 1:n) cat(sprintf("%-3s : %s\n", i, seq_hex[i]))
   cat("\n--- Background Greys ---\n")
   for(i in 1:3) cat(sprintf("G%-2s : %s\n", i, grey_hex[i]))
+  cat("Use for: Serial discrete data (e.g., dosage levels or time points).\n")
+  cat("Note: For continuous gradients (e.g., TPM expression), we recommend native gradient functions, such as:\n")
+  cat("      scale_fill_gradient2(low = '#d9ed92', mid = '#52b69a', high = '#184e77')\n\n")
 
   ggplot2::ggplot(df, ggplot2::aes(x = x, y = type, fill = hex)) +
     ggplot2::geom_tile(color = "white", linewidth = 0.8) +
@@ -143,6 +146,9 @@ show_color_diverging <- function(n = 9) {
   for(i in 1:n) cat(sprintf("%-3s : %s\n", i, div_hex[i]))
   cat("\n--- Background Greys ---\n")
   for(i in 1:3) cat(sprintf("G%-2s : %s\n", i, grey_hex[i]))
+  cat("Use for: Contrasting discrete data (e.g., different degrees of inhibition vs. activation).\n")
+  cat("Note: For continuous gradients (e.g., gene expression heatmaps), we recommend native gradient functions, such as:\n")
+  cat("      scale_fill_gradient2(low = '#bb3e03', mid = '#ffffff', high = '#0380bb')\n\n")
 
   ggplot2::ggplot(df, ggplot2::aes(x = x, y = type, fill = hex)) +
     ggplot2::geom_tile(color = "white", linewidth = 0.8) +
