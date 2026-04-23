@@ -42,8 +42,8 @@ console for easy copy-pasting into \code{ggplot2} manual scales.
   \item \bold{Sequential}: A multi-hue gradient from Creamy Avocado (#d9ed92)
   to Moroccan Blue (#184e77) via a Teal midpoint (#52b69a).
   Define the number of colors with the parameter n (Default n = 9).
-  \item \bold{Diverging}: A transition from Copper Hopper (#bb3e03) to
-  Deep Lagoon (#005f73) with a Shalimar (#ffffbf) midpoint.
+  \item \bold{Diverging}: A transition from Orange-red (#bb3e03) to
+  Blue-cyan (#0380bb) with a White (#ffffff) midpoint.
   Define the number of colors with the parameter n (Default n = 9).
   Odd numbers work best for a central midpoint.
 }

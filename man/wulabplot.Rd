@@ -22,3 +22,11 @@ panel sizing across all lab publications.
 }
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/sihanwusean/wulabplot}
+  \item Report bugs at \url{https://github.com/sihanwusean/wulabplot/issues}
+}
+
+}
