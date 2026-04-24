@@ -15,7 +15,7 @@ save_wulab(
 \arguments{
 \item{p}{A ggplot object. Defaults to \code{last_plot()}, if this parameter is not provided.}
 
-\item{type}{Choice of "2x2", "2x2.58", "2x4.9", "4.9x2", "4.9x4.9"}
+\item{type}{Choice of "2x2", "2.58x2", "4.9x2", "2x4.9", "4.9x4.9"}
 
 \item{filename}{Output filename. Must be PDF.}
 

@@ -4,7 +4,7 @@
 #' requested size in centimeters, facilitating perfect alignment in Illustrator.
 #'
 #' @param p A ggplot object. Defaults to \code{last_plot()}, if this parameter is not provided.
-#' @param type Choice of "2x2", "2x2.58", "2x4.9", "4.9x2", "4.9x4.9"
+#' @param type Choice of "2x2", "2.58x2", "4.9x2", "2x4.9", "4.9x4.9"
 #' @param filename Output filename. Must be PDF.
 #' @param custom_width Optional numeric. Manual width for the panel in cm.
 #' @param custom_height Optional numeric. Manual height for the panel in cm.

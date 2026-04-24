@@ -1,6 +1,6 @@
 # wulabplot: Standardized Scientific Plotting for Journal Publications
 
-The `wulabplot` package provides specialized themes and saving functions designed to meet the rigorous layout requirements of diverse journals. It enforces a minimalist aesthetic using 6-pt Arial fonts, precise 0.5-pt line weights, and consistent panel sizing across all lab publications.
+The `wulabplot` R package is a `ggplot2` plugin that provides specialized themes and saving functions designed to meet the rigorous layout requirements of diverse journals. It enforces a minimalist aesthetic using 6-pt Arial fonts, precise 0.5-pt line weights, and consistent panel sizing across all lab publications for perfect alignment.
 
 For more layout information, please refer to the `plotting standard.ai` Illustrator file.
 
@@ -65,7 +65,24 @@ devtools::install_github("sihanwusean/wulabplot")
 
     # Diverging gradient: Orange-red (#bb3e03) to Blue-cyan (#0380bb) with a White (#ffffff) midpoint
     show_color_diverging(n = 11)
+
+    # Sasha Trubetskoy's 20-color palette, optimized for high-contrast UMAP cluster visualization.
+    show_color_umap()
     ```
+
+1. Apply Color Palettes
+   
+   See more example in `Examples.R`.
+
+   ```r
+   # Choose from qualitative-pair, qualitative-deep, qualitative-light, sequential, diverging, and umap.
+   # Support discrete or continous data for sequential and diverging.
+   # Support colors for NA values and reversed palette order.
+
+   scale_fill_wulab(type = "qualitative-light") 
+   scale_color_wulab(type = "qualitative-deep")
+   ```
+
 
 ## Technical Standards
 
@@ -74,6 +91,12 @@ devtools::install_github("sihanwusean/wulabplot")
 * **Line Weights:** Axis lines and ticks are precisely calculated using a DPI scaling factor to ensure they appear as exactly 0.5-pt in vector software.
 
 * **Export:** All figures are exported using `cairo_pdf` with a transparent background to ensure font embedding and high-quality vector editing.
+
+## Examples
+
+Use `Examples.R` to reproduce the examples below. This plotting style enables (almost) perfect alignment of each X-Y panel.
+
+![Example images for figure panels and layout in Illustrator](./Examples.png)
 
 ## Disclaimer & Lab Policy
 

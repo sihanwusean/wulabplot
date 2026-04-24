@@ -5,6 +5,9 @@
 \alias{show_color_qualitative}
 \alias{show_color_sequential}
 \alias{show_color_diverging}
+\alias{show_color_umap}
+\alias{scale_color_wulab}
+\alias{scale_fill_wulab}
 \title{Wu Lab Color Palettes and Visualization}
 \usage{
 show_color_qualitative()
@@ -12,40 +15,67 @@ show_color_qualitative()
 show_color_sequential(n = 9)
 
 show_color_diverging(n = 9)
+
+show_color_umap()
+
+scale_color_wulab(
+  type = "qualitative-deep",
+  discrete = TRUE,
+  na.color = "G2",
+  reverse = FALSE,
+  ...
+)
+
+scale_fill_wulab(
+  type = "qualitative-light",
+  discrete = TRUE,
+  na.color = "G2",
+  reverse = FALSE,
+  ...
+)
 }
 \arguments{
-\item{n}{Integer. Number of colors. Odd numbers recommended.}
+\item{type}{(Required) Character. The palette to use: \code{"qualitative-deep"} (default for color),
+\code{"qualitative-light"} (default for fill), \code{"qualitative-pair"},
+\code{"sequential"}, \code{"diverging", or \code{"umap"},}.}
+
+\item{discrete}{(Optional) Logical. Use TRUE (default) for factors/characters, FALSE for continuous gradients.}
+
+\item{na.color}{(Optional) Character. Background/missing data color: \code{"G1"} (lightest),
+\code{"G2"} (medium, default), \code{"G3"} (darkest), \code{"white"}, or \code{"black"}.}
+
+\item{reverse}{(Optional) Logical. \code{FALSE} by default. If \code{TRUE}, reverses the palette order.}
+
+\item{...}{Other arguments passed to \code{discrete_scale} or \code{scale_fill_gradientn}.}
 }
 \description{
 A suite of functions to visualize and select lab-standard color palettes.
 These palettes are designed for scientific publications,
 ensuring consistency in experimental group mapping and data gradients.
-
-\code{show_color_qualitative}: View 12 paired qualitative
-colors and 3 grey colors.
-
-\code{show_color_sequential}: View sequential colors for continuous data.
-
-\code{show_color_diverging}: View diverging colors for centered data.
 }
 \details{
-The functions in this family provide a visual reference in the RStudio
+The show_color_...() functions provide a visual reference in the RStudio
 Plots pane while simultaneously printing the exact HEX codes to the
 console for easy copy-pasting into \code{ggplot2} manual scales.
+
+The scale_..._wulab() functions apply pre-defined color palettes to the
+ggplot2 object.
 }
 \section{Palettes included}{
 
 \itemize{
-  \item \bold{Qualitative}: 12 paired colors inspired by traditional Chinese
-  aesthetics, ideal for categorical groups (e.g., WT vs. Mutant). Includes
-  3 specialized grey colors for background or missing data.
-  \item \bold{Sequential}: A multi-hue gradient from Creamy Avocado (#d9ed92)
-  to Moroccan Blue (#184e77) via a Teal midpoint (#52b69a).
-  Define the number of colors with the parameter n (Default n = 9).
-  \item \bold{Diverging}: A transition from Orange-red (#bb3e03) to
-  Blue-cyan (#0380bb) with a White (#ffffff) midpoint.
-  Define the number of colors with the parameter n (Default n = 9).
-  Odd numbers work best for a central midpoint.
+  \item \bold{qualitative-pair}: 12 paired colors (Deep/Light pairs) inspired
+  by traditional Chinese aesthetics.
+  \item \bold{qualitative-deep}: The 6 deeper shades (odd positions) from
+  the paired palette. Best for points and lines.
+  \item \bold{qualitative-light}: The 6 lighter shades (even positions) from
+  the paired palette. Best for bar fills and violin areas.
+  \item \bold{sequential}: A Creamy Avocado (#d9ed92) to Moroccan Blue (#184e77)
+  gradient for serial discrete data.
+  \item \bold{diverging}: An Orange-red (#bb3e03) to Blue-cyan (#0380bb)
+  transition via a White (#ffffff) midpoint.
+  \item \bold{umap}: Sasha Trubetskoy's 20-color palette, optimized for
+  high-contrast UMAP cluster visualization (e.g., Seurat/Scanpy).
 }
 }
 

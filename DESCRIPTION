@@ -1,7 +1,7 @@
 Package: wulabplot
 Type: Package
 Title: Wu Lab Plotting Standards for Journal Publications
-Version: 0.2.2
+Version: 0.3.0
 Author: Sihan Wu Lab
 Maintainer: Sihan Wu Lab <sihan.wu@utsouthwestern.edu>
 Description: A package for standardized scientific plotting to fit most journal requirements.
