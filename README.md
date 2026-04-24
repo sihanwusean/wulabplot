@@ -98,14 +98,42 @@ Use `Examples.R` to reproduce the examples below. This plotting style enables (a
 
 ![Example images for figure panels and layout in Illustrator](./Examples.png)
 
-## Disclaimer & Lab Policy
+## Disclaimer
 
 `wulabplot` is an internal side project developed by the Wu Lab (mostly by the PI at the moment) to ensure a consistent visual identity across our research publications.
 
-**Aesthetics:** The design choices (e.g., 6 pt Arial, specific color palettes) are tailored to our internal preferences and the requirements of our target journals. These may not align with your personal or institutional aesthetic standards.
+**Aesthetics:** The design choices (e.g., 6-pt Arial, specific color palettes) are tailored to our internal preferences and the requirements of our target journals. These may not align with your personal or institutional aesthetic standards.
 
 **Maintenance:** This package is maintained on an ad-hoc basis. We do not guarantee frequent updates, bug fixes, or long-term support.
 
 **Support:** At this time, we only prioritize and address bug reports or feature requests originating from members of the Wu Lab.
 
 External users are welcome to use the package as-is under the MIT License, but should do so with the understanding that it is a specialized tool for our specific research context.
+
+## Changelog
+
+* **Version 0.3.0** - Apr 24, 2026
+  
+    **New Features**
+
+  * **Integrated Palette Scales:** `Added scale_color_wulab()` and `scale_fill_wulab()` to provide direct ggplot2 integration for all lab-standard palettes.
+  
+    * Supports `qualitative-deep`, `qualitative-light`, `qualitative-pair`, `sequential`, `diverging`, and `umap` types.
+
+    * Includes a `discrete` toggle to switch between categorical mapping and continuous gradients.
+
+    * Supports standardized grey shades (`G1`, `G2`, `G3`) for `na.value` handling.
+
+    * UMAP Standard: Introduced `show_color_umap()`, implementing [Sasha Trubetskoy’s 20-color palette](https://sashamaps.net/docs/resources/20-colors/) optimized for high-dimensional single-cell cluster visualization.
+  
+  * **Documentation:** Expanded GitHub `README.md` and R code `Examples.R` to include example figures and layout.
+
+* **Version 0.2.2** - Apr 22, 2026
+  
+  **Bug fix**
+  
+  * **Palette Refinement:** Updated the diverging palette to an Orange-red (`#bb3e03`) to Blue-cyan (`#0380bb`) transition with a true White (`#ffffff`) midpoint for improved differential expression heatmaps.
+
+* **Version 0.2.1** - Apr 22, 2026
+  
+  Initial commit.
