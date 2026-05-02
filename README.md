@@ -51,6 +51,8 @@ devtools::install_github("sihanwusean/wulabplot")
     * 2x4.9: Vertical profiling (2.0 x 4.9 cm).
     * 4.9x2: Horizontal kinetic data (4.9 x 2.0 cm).
     * 4.9x4.9: Large square for complex datasets (4.9 x 4.9 cm).
+  
+    Supports `PDF`, `TIFF`, and `PNG`.
 
 1. Explore Color Palettes
 
@@ -71,7 +73,7 @@ devtools::install_github("sihanwusean/wulabplot")
     ```
 
 1. Apply Color Palettes
-   
+
    See more example in `Examples.R`.
 
    ```r
@@ -82,7 +84,6 @@ devtools::install_github("sihanwusean/wulabplot")
    scale_fill_wulab(type = "qualitative-light") 
    scale_color_wulab(type = "qualitative-deep")
    ```
-
 
 ## Technical Standards
 
@@ -111,6 +112,13 @@ Use `Examples.R` to reproduce the examples below. This plotting style enables (a
 External users are welcome to use the package as-is under the MIT License, but should do so with the understanding that it is a specialized tool for our specific research context.
 
 ## Changelog
+
+* **Version 0.4.0** - May 2, 2026
+  
+  **New Features**: `save_wulab()` now supports `PDF`, `TIFF`, and `PNG` file types.
+  
+  **Misc. items**: Improved internal helper functions; bug fixed for documentations; better handling for errors and exceptions.
+
 
 * **Version 0.3.0** - Apr 24, 2026
   
