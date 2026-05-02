@@ -35,9 +35,11 @@ scale_fill_wulab(
 )
 }
 \arguments{
+\item{n}{(Required) Numeric. Number of colors to display (default = 9).}
+
 \item{type}{(Required) Character. The palette to use: \code{"qualitative-deep"} (default for color),
 \code{"qualitative-light"} (default for fill), \code{"qualitative-pair"},
-\code{"sequential"}, \code{"diverging", or \code{"umap"},}.}
+\code{"sequential"}, \code{"diverging"}, or \code{"umap"}.}
 
 \item{discrete}{(Optional) Logical. Use TRUE (default) for factors/characters, FALSE for continuous gradients.}
 

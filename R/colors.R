@@ -30,49 +30,89 @@
 #' }
 #'
 #' @importFrom ggplot2 discrete_scale scale_color_gradientn scale_fill_gradientn
-#' @importFrom scales manual_pal
 #'
 #' @name wulab_colors
 NULL
 
 # --- INTERNAL HELPERS ---
 
+# Internal Helper: Determine text color (black/white) based on background HEX for readability
 .get_text_col <- function(hex) {
   rgb <- grDevices::col2rgb(hex)
   lum <- (0.299 * rgb[1] + 0.587 * rgb[2] + 0.114 * rgb[3]) / 255
   if (lum > 0.5) "black" else "white"
 }
 
-.get_wulab_pal <- function(type = "qualitative-pair", reverse = FALSE) {
-  qual_hex <- c("#c3282b", "#f9b1a7", "#1b7cb0", "#5dc9e0", "#08a34a", "#bdd974",
-                "#f47521", "#fec773", "#793b96", "#c7a4cd", "#41555e", "#88aca5")
+# Internal Palette Storage
+.qual_hex <- c("#c3282b", "#f9b1a7", "#1b7cb0", "#5dc9e0", "#08a34a", "#bdd974",
+               "#f47521", "#fec773", "#793b96", "#c7a4cd", "#41555e", "#88aca5")
 
-  pal <- switch(type,
-                "qualitative-pair"  = qual_hex,
-                "qualitative-deep"  = qual_hex[c(1, 3, 5, 7, 9, 11)],
-                "qualitative-light" = qual_hex[c(2, 4, 6, 8, 10, 12)],
-                "umap" = c('#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0',
-                           '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8',
-                           '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'),
-                "sequential" = c("#d9ed92", "#52b69a", "#184e77"),
-                "diverging"  = c("#bb3e03", "#ffffff", "#0380bb"),
-                stop("Invalid palette type.")
-  )
+.wulab_palettes <- list(
+  "qualitative-pair"  = .qual_hex,
+  "qualitative-deep"  = .qual_hex[c(1, 3, 5, 7, 9, 11)],
+  "qualitative-light" = .qual_hex[c(2, 4, 6, 8, 10, 12)],
+  "umap" = c('#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0',
+             '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8',
+             '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'),
+  "sequential" = c("#d9ed92", "#52b69a", "#184e77"),
+  "diverging"  = c("#bb3e03", "#ffffff", "#0380bb")
+)
+
+# Internal Helper: Get raw palette vectors
+.get_wulab_pal <- function(type = "qualitative-pair", reverse = FALSE) {
+  # match.arg ensures 'type' exists in our list names
+  type <- match.arg(type, names(.wulab_palettes))
+
+  pal <- .wulab_palettes[[type]]
 
   if (reverse) pal <- rev(pal)
   return(pal)
 }
 
+# Internal Helper: Convert named lab greys to HEX
+.get_na_color <- function(na.color) {
+  switch(na.color,
+         "G1"    = "#f1f0f3",
+         "G2"    = "#c2ccd0",
+         "G3"    = "#808080",
+         "white" = "#ffffff",
+         "black" = "#000000",
+         na.color # Returns the input if it's already a HEX or standard R color name
+  )
+}
+
+# Internal Helper: Select and handle the palette function
+.get_pal_fn <- function(type, pal_vec) {
+  if (type %in% c("sequential", "diverging")) {
+    # For gradients: Always interpolate to the requested 'n'
+    function(n) grDevices::colorRampPalette(pal_vec)(n)
+  } else {
+    # For qualitative/UMAP: Pick exact colors or recycle if n is too large
+    function(n) {
+      if (n > length(pal_vec)) {
+        warning(sprintf(
+          "Wu Lab Palette Alert: Requested %d colors, but only %d available in '%s'. Colors will be recycled.",
+          n, length(pal_vec), type
+        ))
+        # Recycle the palette to match the required length
+        pal_vec <- rep(pal_vec, length.out = n)
+      }
+      pal_vec[1:n]
+    }
+  }
+}
+
 # The Plotting Engine
 .plot_wulab_ref <- function(hex, palette_name, usage_msg = "", recommend_msg = "", show_greys = TRUE) {
-  grey_hex <- if(show_greys) c("#f1f0f3", "#c2ccd0", "#808080") else NULL
+
   n <- length(hex)
 
-  # Console Printing
+  # --- CONSOLE PRINTING ---
   cat(sprintf("\n--- Wu Lab %s Palette ---\n", palette_name))
   for(i in 1:n) cat(sprintf("%-3s : %s\n", i, hex[i]))
 
   if(show_greys) {
+    grey_hex <- c("#f1f0f3", "#c2ccd0", "#808080")
     cat("\n--- Background Greys ---\n")
     for(i in 1:3) cat(sprintf("G%-2s : %s\n", i, grey_hex[i]))
   }
@@ -80,17 +120,35 @@ NULL
   if(usage_msg != "") cat(paste0("Use for: ", usage_msg, "\n"))
   if(recommend_msg != "") cat(paste0("Note: ", recommend_msg, "\n"))
 
-  # Data Prep
-  df <- data.frame(
-    hex = c(hex, grey_hex),
-    id  = c(as.character(1:n), if(show_greys) paste0("G", 1:3) else NULL),
-    type = factor(c(rep("Data", n), if(show_greys) rep("Grey", 3) else NULL),
-                  levels = c("Grey", "Data")),
-    x = c(1:n, if(show_greys) 1:3 else NULL)
-  )
-  df$label_col <- sapply(df$hex, .get_text_col)
+  # --- DATA PREPARATION ---
 
-  # Plot
+  # Build core data
+  df <- data.frame(
+    hex  = hex,
+    id   = as.character(1:n),
+    type = "Data",
+    x    = 1:n,
+    stringsAsFactors = FALSE
+  )
+
+  # Attach greys if requested
+  if (show_greys) {
+    df_grey <- data.frame(
+      hex  = c("#f1f0f3", "#c2ccd0", "#808080"),
+      id   = paste0("G", 1:3),
+      type = "Grey",
+      x    = 1:3,
+      stringsAsFactors = FALSE
+    )
+    df <- rbind(df, df_grey)
+  }
+
+  # Final formatting
+  df$type      <- factor(df$type, levels = c("Grey", "Data"))
+  # Using vapply for type-safe color determination
+  df$label_col <- vapply(df$hex, .get_text_col, FUN.VALUE = character(1))
+
+  # --- GGPLOT ---
   ggplot2::ggplot(df, ggplot2::aes(x = x, y = type, fill = hex)) +
     ggplot2::geom_tile(color = "white", linewidth = 0.8) +
     ggplot2::geom_text(ggplot2::aes(label = id, color = label_col),
@@ -125,6 +183,7 @@ show_color_qualitative <- function() {
 }
 
 #' @rdname wulab_colors
+#' @param n (Required) Numeric. Number of colors to display (default = 9).
 #' @export
 show_color_sequential <- function(n = 9) {
   .plot_wulab_ref(
@@ -136,6 +195,7 @@ show_color_sequential <- function(n = 9) {
 }
 
 #' @rdname wulab_colors
+#' @param n (Required) Numeric. Number of colors to display (default = 9).
 #' @export
 show_color_diverging <- function(n = 9) {
   .plot_wulab_ref(
@@ -162,7 +222,7 @@ show_color_umap <- function() {
 #' @rdname wulab_colors
 #' @param type (Required) Character. The palette to use: \code{"qualitative-deep"} (default for color),
 #' \code{"qualitative-light"} (default for fill), \code{"qualitative-pair"},
-#' \code{"sequential"}, \code{"diverging", or \code{"umap"},}.
+#' \code{"sequential"}, \code{"diverging"}, or \code{"umap"}.
 #' @param discrete (Optional) Logical. Use TRUE (default) for factors/characters, FALSE for continuous gradients.
 #' @param na.color (Optional) Character. Background/missing data color: \code{"G1"} (lightest),
 #' \code{"G2"} (medium, default), \code{"G3"} (darkest), \code{"white"}, or \code{"black"}.
@@ -171,20 +231,12 @@ show_color_umap <- function() {
 #' @export
 scale_color_wulab <- function(type = "qualitative-deep", discrete = TRUE, na.color = "G2", reverse = FALSE, ...) {
   pal_vec <- .get_wulab_pal(type, reverse)
-  na_val <- switch(na.color, "G1"="#f1f0f3", "G2"="#c2ccd0", "G3"="#808080", "white"="#ffffff", "black"="#000000", na.color)
+  na_val  <- .get_na_color(na.color)
 
   if (discrete) {
-    # Decide if we ramp or pick directly
-    pal_fn <- if (type %in% c("sequential", "diverging")) {
-      function(n) grDevices::colorRampPalette(pal_vec)(n)
-    } else {
-      function(n) {
-        if (n > length(pal_vec)) warning("Requested more colors than available in this Wu Lab palette.")
-        pal_vec[1:n]
-      }
-    }
-
-    ggplot2::discrete_scale("colour", "wulab", palette = pal_fn, na.value = na_val, ...)
+    ggplot2::discrete_scale("colour", "wulab",
+                            palette = .get_pal_fn(type, pal_vec),
+                            na.value = na_val, ...)
   } else {
     ggplot2::scale_color_gradientn(colors = pal_vec, na.value = na_val, ...)
   }
@@ -194,19 +246,12 @@ scale_color_wulab <- function(type = "qualitative-deep", discrete = TRUE, na.col
 #' @export
 scale_fill_wulab <- function(type = "qualitative-light", discrete = TRUE, na.color = "G2", reverse = FALSE, ...) {
   pal_vec <- .get_wulab_pal(type, reverse)
-  na_val <- switch(na.color, "G1"="#f1f0f3", "G2"="#c2ccd0", "G3"="#808080", "white"="#ffffff", "black"="#000000", na.color)
+  na_val  <- .get_na_color(na.color)
 
   if (discrete) {
-    pal_fn <- if (type %in% c("sequential", "diverging")) {
-      function(n) grDevices::colorRampPalette(pal_vec)(n)
-    } else {
-      function(n) {
-        if (n > length(pal_vec)) warning("Requested more colors than available in this Wu Lab palette.")
-        pal_vec[1:n]
-      }
-    }
-
-    ggplot2::discrete_scale("fill", "wulab", palette = pal_fn, na.value = na_val, ...)
+    ggplot2::discrete_scale("fill", "wulab",
+                            palette = .get_pal_fn(type, pal_vec),
+                            na.value = na_val, ...)
   } else {
     ggplot2::scale_fill_gradientn(colors = pal_vec, na.value = na_val, ...)
   }

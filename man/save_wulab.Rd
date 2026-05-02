@@ -9,33 +9,42 @@ save_wulab(
   type = "2x2",
   filename = "plot.pdf",
   custom_width = NULL,
-  custom_height = NULL
+  custom_height = NULL,
+  dpi = 300
 )
 }
 \arguments{
 \item{p}{A ggplot object. Defaults to \code{last_plot()}, if this parameter is not provided.}
 
-\item{type}{Choice of "2x2", "2.58x2", "4.9x2", "2x4.9", "4.9x4.9"}
+\item{type}{Character. Choice of standard dimensions: "2x2", "2.58x2", "4.9x2", "2x4.9", "4.9x4.9"}
 
-\item{filename}{Output filename. Must be PDF.}
+\item{filename}{Character. Output filename with extension (.pdf, .png, .tiff, .tif).}
 
-\item{custom_width}{Optional numeric. Manual width for the panel in cm.}
+\item{custom_width}{(Optional) Numeric. Manual width for the panel in cm.}
 
-\item{custom_height}{Optional numeric. Manual height for the panel in cm.}
+\item{custom_height}{(Optional) Numeric. Manual height for the panel in cm.}
+
+\item{dpi}{(Optional) Numeric. Resolution for raster formats (PNG/TIFF). Default is 300.}
 }
 \description{
+Saves ggplot objects with absolute panel dimensions across various formats.
+Automatically handles faceting to ensure each individual panel is the
+requested size (e.g., exactly 2x2 cm).
 This function ensures every figure panel is exactly the
 requested size in centimeters, facilitating perfect alignment in Illustrator.
 }
 \details{
 The function is facet-aware; it identifies every panel in the plot
 (including those created by \code{facet_wrap} or \code{facet_grid})
-and applies the specified dimensions to each. The final PDF size is
+and applies the specified dimensions to each. The final figure size is
 calculated automatically to accommodate these panels plus all
 surrounding labels and margins.
 
-Figures are exported using \code{grDevices::cairo_pdf} with a
-transparent background for seamless editing in Adobe Illustrator or other editors.
+Supports multiple output formats including PDF, PNG, and TIFF. Vector formats
+(PDF) are exported via \code{grDevices::cairo_pdf}, while raster formats
+(PNG, TIFF) utilize Cairo-based devices to ensure consistent font rendering,
+transparency, and high-resolution output suitable for both digital presentations
+and high-impact publications.
 }
 \section{Standard Presets (cm)}{
 
