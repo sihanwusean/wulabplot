@@ -113,18 +113,21 @@ External users are welcome to use the package as-is under the MIT License, but s
 
 ## Changelog
 
+* **Version 0.4.1** - July 16, 2026
+  
+  **Improvement**: Added an internal `.onLoad` hook (`R/zzz.R`) to automatically register the Arial font family on Windows systems.
+
 * **Version 0.4.0** - May 2, 2026
   
   **New Features**: `save_wulab()` now supports `PDF`, `TIFF`, and `PNG` file types.
   
   **Misc. items**: Improved internal helper functions; bug fixed for documentations; better handling for errors and exceptions.
 
-
 * **Version 0.3.0** - Apr 24, 2026
   
     **New Features**
 
-  * **Integrated Palette Scales:** `Added scale_color_wulab()` and `scale_fill_wulab()` to provide direct ggplot2 integration for all lab-standard palettes.
+  * **Integrated Palette Scales:** Added `scale_color_wulab()` and `scale_fill_wulab()` to provide direct ggplot2 integration for all lab-standard palettes.
   
     * Supports `qualitative-deep`, `qualitative-light`, `qualitative-pair`, `sequential`, `diverging`, and `umap` types.
 
