@@ -6,9 +6,9 @@ For more layout information, please refer to the `plotting standard.ai` Illustra
 
 ## Features
 
-* **Precision Theme**: `theme_wulab()` implements 6 pt Arial base fonts and perfectly scaled 0.5 pt axis lines. It removes all background rectangles to provide a transparent background for seamless editing in Adobe Illustrator.
+* **Precision Theme**: `theme_wulab()` implements 6 pt Arial base fonts, perfectly scaled 0.5 pt axis lines, and calibrated title spacing. It removes all background rectangles to provide a transparent background for seamless editing in Adobe Illustrator.
 * **Absolute Panel Sizing**: `save_wulab()` forces figure panels to exact centimeter dimensions, ensuring identical data areas regardless of axis label length or faceting.
-* **Color Standards**: Built-in visualization tools for lab-approved qualitative, sequential, and diverging palettes inspired by traditional aesthetics.
+* **Color Standards & Auto-Recognition**: Built-in visualization tools and scales for qualitative, sequential, high-contrast, and diverging palettes. Includes automatic recognition of discrete vs. continuous data types and smooth legend guide rendering.
 
 ## Installation
 
@@ -62,8 +62,11 @@ devtools::install_github("sihanwusean/wulabplot")
     # 12 paired colors (Chinese aesthetics) + 3 background greys
     show_color_qualitative()
 
-    # Sequential gradient: Creamy Avocado (#d9ed92) to Moroccan Blue (#184e77) via a Teal midpoint (#52b69a)
+    # Standard sequential gradient: Creamy Avocado (#d9ed92) to Moroccan Blue (#184e77) via Teal (#52b69a)
     show_color_sequential(n = 9)
+
+    # High-contrast sequential gradient: Pure White (#ffffff) to Moroccan Blue (#184e77), ideal for heatmaps
+    show_color_sequential_hc()
 
     # Diverging gradient: Orange-red (#bb3e03) to Blue-cyan (#0380bb) with a White (#ffffff) midpoint
     show_color_diverging(n = 11)
@@ -74,20 +77,23 @@ devtools::install_github("sihanwusean/wulabplot")
 
 1. Apply Color Palettes
 
-   See more example in `Examples.R`.
+   See more examples in `Examples.R`.
 
    ```r
-   # Choose from qualitative-pair, qualitative-deep, qualitative-light, sequential, diverging, and umap.
-   # Support discrete or continous data for sequential and diverging.
-   # Support colors for NA values and reversed palette order.
+   # Choose from qualitative-pair, qualitative-deep, qualitative-light, sequential, 
+   # sequential-highcontrast (or sequential-hc), diverging, and umap.
+   # Automatically detects discrete factors/characters vs continuous numeric vectors.
+   # Supports midpoint anchoring for diverging scales (defaulting to 0 for continuous scales).
 
    scale_fill_wulab(type = "qualitative-light") 
    scale_color_wulab(type = "qualitative-deep")
+   scale_fill_wulab(type = "sequential-hc") # High-contrast heatmap palette starting from white
+   scale_fill_wulab(type = "diverging", midpoint = 0) # Zero-anchored continuous diverging scale
    ```
 
 ## Technical Standards
 
-* **Typography:** Axis titles/text are set to 6-pt Arial; plot titles are 7-pt bold Arial.
+* **Typography:** Axis titles/text are set to 6-pt Arial; plot titles are 7-pt bold Arial with calibrated bottom spacing (`margin(b = 3.5, unit = "pt")`).
 
 * **Line Weights:** Axis lines and ticks are precisely calculated using a DPI scaling factor to ensure they appear as exactly 0.5-pt in vector software.
 
@@ -112,6 +118,16 @@ Use `Examples.R` to reproduce the examples below. This plotting style enables (a
 External users are welcome to use the package as-is under the MIT License, but should do so with the understanding that it is a specialized tool for our specific research context.
 
 ## Changelog
+
+* **Version 0.5.0** - July 23, 2026
+
+  **New Features & Enhancements**:
+  
+  * **Auto Data-Type Recognition (`discrete = NULL`)**: `scale_color_wulab()` and `scale_fill_wulab()` now automatically detect whether aesthetic data is discrete (factors/characters) or continuous (numeric) and switch scales dynamically.
+  * **High-Contrast Sequential Palette**: Added `"sequential-highcontrast"` (alias `"sequential-hc"`) palette (`c("#ffffff", "#d9ed92", "#52b69a", "#184e77")`) and its visualizer `show_color_sequential_hc()`, starting from pure white (`#ffffff`) for unidirectional heatmaps.
+  * **Zero-Anchored Diverging Scales**: Continuous `diverging` scales now include an explicit `midpoint = NULL` parameter (defaulting to `0`), ensuring continuous fold-change and Z-score heatmaps anchor white at zero.
+  * **Dynamic Legend Guide Sync**: Automatically syncs continuous scales to smooth gradient colorbars (`guide = "colourbar"`) and discrete scales to categorical legend blocks (`guide = "legend"`).
+  * **Title Spacing Optimization**: Added calibrated bottom margins to `plot.title` (`margin(b = 3.5, unit = "pt")`) and `strip.text` in `theme_wulab()`, resolving panel crowding while saving page space.
 
 * **Version 0.4.1** - July 16, 2026
   

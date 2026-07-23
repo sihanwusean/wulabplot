@@ -18,6 +18,7 @@ panel sizing across all lab publications.
   \item \code{\link{save_wulab}}: Export figures with forced panel dimensions.
   \item \code{\link{show_color_qualitative}}: View 12 paired qualitative colors (inspired by traditional Chinese colors) and 3 grey colors. HEX codes are printed in the console.
   \item \code{\link{show_color_sequential}}: View sequential colors, from the lightest Creamy Avocado (#d9ed92) to the deepest Moroccan Blue (#184e77), with the midpoint of Teal (#52b69a). Define the number of colors with the parameter n. HEX codes are printed in the console.
+  \item \code{\link{show_color_sequential_hc}}: View high-contrast sequential colors, from White (#ffffff) to Moroccan Blue (#184e77). Define the number of colors with the parameter n. HEX codes are printed in the console.
   \item \code{\link{show_color_diverging}}: View diverging colors, from Copper Hopper (#bb3e03) to Deep Lagoon (#005f73), with the midpoint of Shalimar (#ffffbf). Define the number of colors with the parameter n. Odd numbers work best for a central midpoint. HEX codes are printed in the console.
 }
 }
