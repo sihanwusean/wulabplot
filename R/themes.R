@@ -52,7 +52,12 @@ theme_wulab <- function() {
       axis.title = ggplot2::element_text(size = 6, color = "black"),
       axis.text = ggplot2::element_text(size = 6, color = "black"),
       legend.text = ggplot2::element_text(size = 6),
-      plot.title = ggplot2::element_text(size = 7, face = "bold", hjust = 0.5),
+      plot.title = ggplot2::element_text(
+        size = 7,
+        face = "bold",
+        hjust = 0.5,
+        margin = ggplot2::margin(b = 3.5, unit = "pt")
+      ),
 
       # Adjusted line weights for exactly 0.5pt in Illustrator
       axis.line = ggplot2::element_line(linewidth = line_size_mm, colour = "black"),
@@ -69,6 +74,9 @@ theme_wulab <- function() {
       legend.key.size = ggplot2::unit(0.3, "cm"),
       legend.margin = ggplot2::margin(2, 2, 2, 2),
       strip.background = ggplot2::element_blank(),
-      strip.text = ggplot2::element_text(size = 7)
+      strip.text = ggplot2::element_text(
+        size = 7,
+        margin = ggplot2::margin(b = 2.5, t = 2.5, unit = "pt")
+      )
     )
 }

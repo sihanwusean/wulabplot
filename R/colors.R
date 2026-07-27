@@ -23,6 +23,8 @@
 #'   the paired palette. Best for bar fills and violin areas.
 #'   \item \bold{sequential}: A Creamy Avocado (#d9ed92) to Moroccan Blue (#184e77)
 #'   gradient for serial discrete data.
+#'   \item \bold{sequential-highcontrast} (or \bold{sequential-hc}): A White (#ffffff)
+#'   to Moroccan Blue (#184e77) high-contrast gradient for unidirectional heatmaps and continuous data.
 #'   \item \bold{diverging}: An Orange-red (#bb3e03) to Blue-cyan (#0380bb)
 #'   transition via a White (#ffffff) midpoint.
 #'   \item \bold{umap}: Sasha Trubetskoy's 20-color palette, optimized for
@@ -48,14 +50,16 @@ NULL
                "#f47521", "#fec773", "#793b96", "#c7a4cd", "#41555e", "#88aca5")
 
 .wulab_palettes <- list(
-  "qualitative-pair"  = .qual_hex,
-  "qualitative-deep"  = .qual_hex[c(1, 3, 5, 7, 9, 11)],
-  "qualitative-light" = .qual_hex[c(2, 4, 6, 8, 10, 12)],
-  "umap" = c('#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0',
-             '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8',
-             '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'),
-  "sequential" = c("#d9ed92", "#52b69a", "#184e77"),
-  "diverging"  = c("#bb3e03", "#ffffff", "#0380bb")
+  "qualitative-pair"        = .qual_hex,
+  "qualitative-deep"        = .qual_hex[c(1, 3, 5, 7, 9, 11)],
+  "qualitative-light"       = .qual_hex[c(2, 4, 6, 8, 10, 12)],
+  "umap"                    = c('#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0',
+                               '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8',
+                               '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'),
+  "sequential"              = c("#d9ed92", "#52b69a", "#184e77"),
+  "sequential-highcontrast" = c("#ffffff", "#d9ed92", "#52b69a", "#184e77"),
+  "sequential-hc"           = c("#ffffff", "#d9ed92", "#52b69a", "#184e77"),
+  "diverging"               = c("#bb3e03", "#ffffff", "#0380bb")
 )
 
 # Internal Helper: Get raw palette vectors
@@ -83,7 +87,7 @@ NULL
 
 # Internal Helper: Select and handle the palette function
 .get_pal_fn <- function(type, pal_vec) {
-  if (type %in% c("sequential", "diverging")) {
+  if (type %in% c("sequential", "sequential-highcontrast", "sequential-hc", "diverging")) {
     # For gradients: Always interpolate to the requested 'n'
     function(n) grDevices::colorRampPalette(pal_vec)(n)
   } else {
@@ -190,7 +194,19 @@ show_color_sequential <- function(n = 9) {
     hex = grDevices::colorRampPalette(.get_wulab_pal("sequential"))(n),
     palette_name = paste0("Sequential (n=", n, ")"),
     usage_msg = "Serial discrete data (e.g., dosage levels or time points).",
-    recommend_msg = "For uni-directional gradients (e.g., TPM values), we recommend native gradient functions, such as:\nscale_fill_gradient2(low = '#d9ed92', mid = '#52b69a', high = '#184e77')"
+    recommend_msg = "For the most accurate sequential gradient, we recommend a strictly monotonic and linear palette, such as:\nscale_fill_gradient2(low = '#ffffff', mid = '#8ba6bb', high = '#184e77')"
+  )
+}
+
+#' @rdname wulab_colors
+#' @param n (Required) Numeric. Number of colors to display (default = 9).
+#' @export
+show_color_sequential_hc <- function(n = 9) {
+  .plot_wulab_ref(
+    hex = grDevices::colorRampPalette(.get_wulab_pal("sequential-highcontrast"))(n),
+    palette_name = paste0("Sequential High-Contrast (n=", n, ")"),
+    usage_msg = "Unidirectional heatmaps and continuous expression gradients with white zero-baseline.",
+    recommend_msg = "For the most accurate sequential gradient, we recommend a strictly monotonic and linear palette, such as:\nscale_fill_gradient2(low = '#ffffff', mid = '#8ba6bb', high = '#184e77')"
   )
 }
 
@@ -217,42 +233,206 @@ show_color_umap <- function() {
   )
 }
 
+# Internal Helper: Auto-detecting GGProto Scale
+.ScaleWulabAuto <- ggplot2::ggproto(
+  "ScaleWulabAuto",
+  ggplot2::Scale,
+  aesthetics = "colour",
+  type = "qualitative-deep",
+  na.color = "G2",
+  reverse = FALSE,
+  midpoint = NULL,
+  args = list(),
+  actual_scale = NULL,
+
+  init_scale = function(self, df) {
+    if (!is.null(self$actual_scale)) return()
+    if (is.null(df) || nrow(df) == 0) return()
+    aesthetics <- intersect(self$aesthetics, names(df))
+    if (length(aesthetics) == 0) return()
+
+    x <- df[[aesthetics[1]]]
+    is_disc <- !is.numeric(x)
+
+    pal_vec <- .get_wulab_pal(self$type, self$reverse)
+    na_val  <- .get_na_color(self$na.color)
+
+    if (is_disc) {
+      real_sc <- do.call(
+        ggplot2::discrete_scale,
+        c(list(aesthetics = self$aesthetics,
+               scale_name = "wulab",
+               palette = .get_pal_fn(self$type, pal_vec),
+               na.value = na_val), self$args)
+      )
+    } else {
+      if (self$type == "diverging") {
+        mid_val  <- if (is.null(self$midpoint)) 0 else self$midpoint
+        low_col  <- pal_vec[1]
+        mid_col  <- if (length(pal_vec) >= 3) pal_vec[2] else "#ffffff"
+        high_col <- if (length(pal_vec) >= 3) pal_vec[3] else pal_vec[length(pal_vec)]
+
+        if ("fill" %in% self$aesthetics) {
+          real_sc <- do.call(
+            ggplot2::scale_fill_gradient2,
+            c(list(low = low_col, mid = mid_col, high = high_col,
+                   midpoint = mid_val, na.value = na_val), self$args)
+          )
+        } else {
+          real_sc <- do.call(
+            ggplot2::scale_color_gradient2,
+            c(list(low = low_col, mid = mid_col, high = high_col,
+                   midpoint = mid_val, na.value = na_val), self$args)
+          )
+        }
+      } else {
+        if ("fill" %in% self$aesthetics) {
+          real_sc <- do.call(
+            ggplot2::scale_fill_gradientn,
+            c(list(colors = pal_vec, na.value = na_val), self$args)
+          )
+        } else {
+          real_sc <- do.call(
+            ggplot2::scale_color_gradientn,
+            c(list(colors = pal_vec, na.value = na_val), self$args)
+          )
+        }
+      }
+    }
+    self$actual_scale <- real_sc
+    self$guide <- real_sc$guide
+  },
+
+  clone = function(self) {
+    new <- ggplot2::ggproto(NULL, self)
+    if (!is.null(self$actual_scale)) {
+      new$actual_scale <- self$actual_scale$clone()
+    }
+    new
+  },
+
+  transform_df = function(self, df, ...) {
+    self$init_scale(df)
+    if (!is.null(self$actual_scale)) self$actual_scale$transform_df(df, ...) else df
+  },
+
+  transform = function(self, x, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$transform(x, ...) else x
+  },
+
+  train_df = function(self, df, ...) {
+    self$init_scale(df)
+    if (!is.null(self$actual_scale)) self$actual_scale$train_df(df, ...)
+  },
+
+  train = function(self, x, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$train(x, ...)
+  },
+
+  map_df = function(self, df, ...) {
+    self$init_scale(df)
+    if (!is.null(self$actual_scale)) self$actual_scale$map_df(df, ...) else df
+  },
+
+  map = function(self, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$map(...) else NULL
+  },
+
+  is_discrete = function(self, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$is_discrete(...) else TRUE
+  },
+
+  is_empty = function(self, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$is_empty(...) else FALSE
+  },
+
+  dimension = function(self, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$dimension(...) else c(0, 1)
+  },
+
+  get_breaks = function(self, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$get_breaks(...) else NULL
+  },
+
+  get_labels = function(self, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$get_labels(...) else NULL
+  },
+
+  get_limits = function(self, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$get_limits(...) else NULL
+  },
+
+  break_info = function(self, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$break_info(...)
+  },
+
+  make_title = function(self, ...) {
+    if (!is.null(self$actual_scale)) self$actual_scale$make_title(...) else NULL
+  }
+)
+
 # --- EXPORTED GGPLOT2 SCALES ---
 
 #' @rdname wulab_colors
 #' @param type (Required) Character. The palette to use: \code{"qualitative-deep"} (default for color),
 #' \code{"qualitative-light"} (default for fill), \code{"qualitative-pair"},
-#' \code{"sequential"}, \code{"diverging"}, or \code{"umap"}.
-#' @param discrete (Optional) Logical. Use TRUE (default) for factors/characters, FALSE for continuous gradients.
+#' \code{"sequential"}, \code{"sequential-highcontrast"} (or \code{"sequential-hc"}),
+#' \code{"diverging"}, or \code{"umap"}.
+#' @param discrete (Optional) Logical or NULL. If \code{NULL} (default), automatically detects whether data is discrete or continuous. Use \code{TRUE} for factors/characters or \code{FALSE} for continuous gradients.
 #' @param na.color (Optional) Character. Background/missing data color: \code{"G1"} (lightest),
 #' \code{"G2"} (medium, default), \code{"G3"} (darkest), \code{"white"}, or \code{"black"}.
 #' @param reverse (Optional) Logical. \code{FALSE} by default. If \code{TRUE}, reverses the palette order.
-#' @param ... Other arguments passed to \code{discrete_scale} or \code{scale_fill_gradientn}.
+#' @param midpoint (Optional) Numeric or NULL. Midpoint value for continuous diverging scales (defaults to \code{0} when \code{type = "diverging"}). Ignored for non-diverging scales.
+#' @param ... Other arguments passed to \code{discrete_scale}, \code{scale_fill_gradient2}, or \code{scale_fill_gradientn}.
 #' @export
-scale_color_wulab <- function(type = "qualitative-deep", discrete = TRUE, na.color = "G2", reverse = FALSE, ...) {
-  pal_vec <- .get_wulab_pal(type, reverse)
-  na_val  <- .get_na_color(na.color)
-
-  if (discrete) {
+scale_color_wulab <- function(type = "qualitative-deep", discrete = NULL, na.color = "G2", reverse = FALSE, midpoint = NULL, ...) {
+  if (isTRUE(discrete)) {
+    pal_vec <- .get_wulab_pal(type, reverse)
+    na_val  <- .get_na_color(na.color)
     ggplot2::discrete_scale("colour", "wulab",
                             palette = .get_pal_fn(type, pal_vec),
                             na.value = na_val, ...)
+  } else if (isFALSE(discrete)) {
+    pal_vec <- .get_wulab_pal(type, reverse)
+    na_val  <- .get_na_color(na.color)
+    if (type == "diverging") {
+      mid_val  <- if (is.null(midpoint)) 0 else midpoint
+      low_col  <- pal_vec[1]
+      mid_col  <- if (length(pal_vec) >= 3) pal_vec[2] else "#ffffff"
+      high_col <- if (length(pal_vec) >= 3) pal_vec[3] else pal_vec[length(pal_vec)]
+      ggplot2::scale_color_gradient2(low = low_col, mid = mid_col, high = high_col,
+                                     midpoint = mid_val, na.value = na_val, ...)
+    } else {
+      ggplot2::scale_color_gradientn(colors = pal_vec, na.value = na_val, ...)
+    }
   } else {
-    ggplot2::scale_color_gradientn(colors = pal_vec, na.value = na_val, ...)
+    ggplot2::ggproto(NULL, .ScaleWulabAuto, aesthetics = "colour", type = type, na.color = na.color, reverse = reverse, midpoint = midpoint, args = list(...))
   }
 }
 
 #' @rdname wulab_colors
 #' @export
-scale_fill_wulab <- function(type = "qualitative-light", discrete = TRUE, na.color = "G2", reverse = FALSE, ...) {
-  pal_vec <- .get_wulab_pal(type, reverse)
-  na_val  <- .get_na_color(na.color)
-
-  if (discrete) {
+scale_fill_wulab <- function(type = "qualitative-light", discrete = NULL, na.color = "G2", reverse = FALSE, midpoint = NULL, ...) {
+  if (isTRUE(discrete)) {
+    pal_vec <- .get_wulab_pal(type, reverse)
+    na_val  <- .get_na_color(na.color)
     ggplot2::discrete_scale("fill", "wulab",
                             palette = .get_pal_fn(type, pal_vec),
                             na.value = na_val, ...)
+  } else if (isFALSE(discrete)) {
+    pal_vec <- .get_wulab_pal(type, reverse)
+    na_val  <- .get_na_color(na.color)
+    if (type == "diverging") {
+      mid_val  <- if (is.null(midpoint)) 0 else midpoint
+      low_col  <- pal_vec[1]
+      mid_col  <- if (length(pal_vec) >= 3) pal_vec[2] else "#ffffff"
+      high_col <- if (length(pal_vec) >= 3) pal_vec[3] else pal_vec[length(pal_vec)]
+      ggplot2::scale_fill_gradient2(low = low_col, mid = mid_col, high = high_col,
+                                    midpoint = mid_val, na.value = na_val, ...)
+    } else {
+      ggplot2::scale_fill_gradientn(colors = pal_vec, na.value = na_val, ...)
+    }
   } else {
-    ggplot2::scale_fill_gradientn(colors = pal_vec, na.value = na_val, ...)
+    ggplot2::ggproto(NULL, .ScaleWulabAuto, aesthetics = "fill", type = type, na.color = na.color, reverse = reverse, midpoint = midpoint, args = list(...))
   }
 }

@@ -4,6 +4,7 @@
 \alias{wulab_colors}
 \alias{show_color_qualitative}
 \alias{show_color_sequential}
+\alias{show_color_sequential_hc}
 \alias{show_color_diverging}
 \alias{show_color_umap}
 \alias{scale_color_wulab}
@@ -14,23 +15,27 @@ show_color_qualitative()
 
 show_color_sequential(n = 9)
 
+show_color_sequential_hc(n = 9)
+
 show_color_diverging(n = 9)
 
 show_color_umap()
 
 scale_color_wulab(
   type = "qualitative-deep",
-  discrete = TRUE,
+  discrete = NULL,
   na.color = "G2",
   reverse = FALSE,
+  midpoint = NULL,
   ...
 )
 
 scale_fill_wulab(
   type = "qualitative-light",
-  discrete = TRUE,
+  discrete = NULL,
   na.color = "G2",
   reverse = FALSE,
+  midpoint = NULL,
   ...
 )
 }
@@ -39,16 +44,19 @@ scale_fill_wulab(
 
 \item{type}{(Required) Character. The palette to use: \code{"qualitative-deep"} (default for color),
 \code{"qualitative-light"} (default for fill), \code{"qualitative-pair"},
-\code{"sequential"}, \code{"diverging"}, or \code{"umap"}.}
+\code{"sequential"}, \code{"sequential-highcontrast"} (or \code{"sequential-hc"}),
+\code{"diverging"}, or \code{"umap"}.}
 
-\item{discrete}{(Optional) Logical. Use TRUE (default) for factors/characters, FALSE for continuous gradients.}
+\item{discrete}{(Optional) Logical or NULL. If \code{NULL} (default), automatically detects whether data is discrete or continuous. Use \code{TRUE} for factors/characters or \code{FALSE} for continuous gradients.}
 
 \item{na.color}{(Optional) Character. Background/missing data color: \code{"G1"} (lightest),
 \code{"G2"} (medium, default), \code{"G3"} (darkest), \code{"white"}, or \code{"black"}.}
 
 \item{reverse}{(Optional) Logical. \code{FALSE} by default. If \code{TRUE}, reverses the palette order.}
 
-\item{...}{Other arguments passed to \code{discrete_scale} or \code{scale_fill_gradientn}.}
+\item{midpoint}{(Optional) Numeric or NULL. Midpoint value for continuous diverging scales (defaults to \code{0} when \code{type = "diverging"}). Ignored for non-diverging scales.}
+
+\item{...}{Other arguments passed to \code{discrete_scale}, \code{scale_fill_gradient2}, or \code{scale_fill_gradientn}.}
 }
 \description{
 A suite of functions to visualize and select lab-standard color palettes.
@@ -74,6 +82,8 @@ ggplot2 object.
   the paired palette. Best for bar fills and violin areas.
   \item \bold{sequential}: A Creamy Avocado (#d9ed92) to Moroccan Blue (#184e77)
   gradient for serial discrete data.
+  \item \bold{sequential-highcontrast} (or \bold{sequential-hc}): A White (#ffffff)
+  to Moroccan Blue (#184e77) high-contrast gradient for unidirectional heatmaps and continuous data.
   \item \bold{diverging}: An Orange-red (#bb3e03) to Blue-cyan (#0380bb)
   transition via a White (#ffffff) midpoint.
   \item \bold{umap}: Sasha Trubetskoy's 20-color palette, optimized for
