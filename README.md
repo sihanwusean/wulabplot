@@ -7,8 +7,8 @@ For more layout information, please refer to the `plotting standard.ai` Illustra
 ## Features
 
 * **Precision Theme**: `theme_wulab()` implements 6 pt Arial base fonts, perfectly scaled 0.5 pt axis lines, and calibrated title spacing. It removes all background rectangles to provide a transparent background for seamless editing in Adobe Illustrator.
-* **Absolute Panel Sizing**: `save_wulab()` forces figure panels to exact centimeter dimensions, ensuring identical data areas regardless of axis label length or faceting.
-* **Color Standards & Auto-Recognition**: Built-in visualization tools and scales for qualitative, sequential, high-contrast, and diverging palettes. Includes automatic recognition of discrete vs. continuous data types and smooth legend guide rendering.
+* **Absolute Panel Sizing**: `save_wulab()` forces figure panels to exact centimeter dimensions, ensuring identical data areas regardless of axis label length or faceting. Features flexible argument syntax (matching `ggsave`) and sensible default behaviors.
+* **Color Standards & Unified Visualizer**: Built-in scales for qualitative, sequential, high-contrast, and diverging palettes with automatic data-type (discrete vs. continuous) recognition. Includes `show_wulab_colors()` to display all lab palettes on a single printable Letter-size reference guide.
 
 ## Installation
 
@@ -56,9 +56,14 @@ devtools::install_github("sihanwusean/wulabplot")
 
 1. Explore Color Palettes
 
-    View colors and their HEX codes in the R console.
+    Display all color palettes and HEX codes on a unified, Letter-size (8.5 x 11 in) publication reference guide or export to PDF/PNG.
 
     ```r
+    # Display unified color palette guide (in RStudio Plots pane or export to file)
+    show_wulab_colors()
+    show_wulab_colors("wulab_colors.pdf")
+
+    # Individual palette reference visualizers:
     # 12 paired colors (Chinese aesthetics) + 3 background greys
     show_color_qualitative()
 
@@ -69,7 +74,7 @@ devtools::install_github("sihanwusean/wulabplot")
     show_color_sequential_hc()
 
     # Diverging gradient: Orange-red (#bb3e03) to Blue-cyan (#0380bb) with a White (#ffffff) midpoint
-    show_color_diverging(n = 11)
+    show_color_diverging(n = 9)
 
     # Sasha Trubetskoy's 20-color palette, optimized for high-contrast UMAP cluster visualization.
     show_color_umap()
@@ -118,6 +123,13 @@ Use `Examples.R` to reproduce the examples below. This plotting style enables (a
 External users are welcome to use the package as-is under the MIT License, but should do so with the understanding that it is a specialized tool for our specific research context.
 
 ## Changelog
+
+* **Version 0.6.0** - July 31, 2026
+
+  **New Features & Enhancements**:
+
+  * **Unified Color Palette Visualizer (`show_wulab_colors()`)**: Re-worked color palette visualization into a single, comprehensive Letter-size (8.5 x 11 in) reference poster displaying all 6 Wu Lab palettes (Qualitative Paired, UMAP 20-Color Cluster, Standardized Background Greys, Sequential, Sequential High-Contrast, and Diverging).
+  * **Enhanced `save_wulab()` Usability**: Made `save_wulab()` easier to use without needing to explicitly specify the `filename` parameter name (matching `ggsave` positional syntax), while improving default parameter fallback behaviors.
 
 * **Version 0.5.0** - July 23, 2026
 
