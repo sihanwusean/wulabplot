@@ -5,26 +5,30 @@
 \title{Save Plot with Forced Panel Size}
 \usage{
 save_wulab(
-  p = ggplot2::last_plot(),
-  type = "2x2",
-  filename = "plot.pdf",
+  filename = NULL,
+  plot = NULL,
+  type = NULL,
   custom_width = NULL,
   custom_height = NULL,
-  dpi = 300
+  dpi = 300,
+  p = NULL
 )
 }
 \arguments{
-\item{p}{A ggplot object. Defaults to \code{last_plot()}, if this parameter is not provided.}
+\item{filename}{Character or ggplot object. Output filename with extension (.pdf, .png, .tiff, .tif).
+Can be passed as the first positional argument (matching \code{ggsave}), or omitted to default to \code{"plot.pdf"}.}
 
-\item{type}{Character. Choice of standard dimensions: "2x2", "2.58x2", "4.9x2", "2x4.9", "4.9x4.9"}
+\item{plot}{A ggplot object or character filename. Defaults to \code{last_plot()}.}
 
-\item{filename}{Character. Output filename with extension (.pdf, .png, .tiff, .tif).}
+\item{type}{(Optional) Character. Choice of standard dimensions: "2x2", "2.58x2", "4.9x2", "2x4.9", "4.9x4.9". If omitted and no custom dimensions are specified, defaults to "2x2" with a warning reminder.}
 
 \item{custom_width}{(Optional) Numeric. Manual width for the panel in cm.}
 
 \item{custom_height}{(Optional) Numeric. Manual height for the panel in cm.}
 
 \item{dpi}{(Optional) Numeric. Resolution for raster formats (PNG/TIFF). Default is 300.}
+
+\item{p}{Deprecated/Legacy parameter for specifying the plot object. Maintained for backwards compatibility.}
 }
 \description{
 Saves ggplot objects with absolute panel dimensions across various formats.
@@ -62,7 +66,11 @@ library(ggplot2)
 p <- ggplot(mtcars, aes(wt, mpg)) +
   geom_point() +
   theme_wulab()
-# Save as a standard square figure
-save_wulab(p, type = "2x2", filename = "Figure_1A.pdf")
+
+# Save using filename as first positional argument (matching ggsave)
+save_wulab("Figure_1A.pdf", p, type = "2x2")
+
+# Save last_plot() with automatic .pdf extension
+save_wulab("Figure_1A", type = "2x2")
 
 }

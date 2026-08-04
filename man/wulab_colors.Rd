@@ -2,6 +2,7 @@
 % Please edit documentation in R/colors.R
 \name{wulab_colors}
 \alias{wulab_colors}
+\alias{show_wulab_colors}
 \alias{show_color_qualitative}
 \alias{show_color_sequential}
 \alias{show_color_sequential_hc}
@@ -11,6 +12,8 @@
 \alias{scale_fill_wulab}
 \title{Wu Lab Color Palettes and Visualization}
 \usage{
+show_wulab_colors(filename = NULL, dpi = 300)
+
 show_color_qualitative()
 
 show_color_sequential(n = 9)
@@ -40,6 +43,10 @@ scale_fill_wulab(
 )
 }
 \arguments{
+\item{filename}{(Optional) Character. Output filename (e.g. \code{"wulab_palettes.pdf"}) to export the Letter-size reference guide to disk.}
+
+\item{dpi}{(Optional) Numeric. Resolution for raster exports (default = 300).}
+
 \item{n}{(Required) Numeric. Number of colors to display (default = 9).}
 
 \item{type}{(Required) Character. The palette to use: \code{"qualitative-deep"} (default for color),

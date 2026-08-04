@@ -53,9 +53,9 @@ NULL
   "qualitative-pair"        = .qual_hex,
   "qualitative-deep"        = .qual_hex[c(1, 3, 5, 7, 9, 11)],
   "qualitative-light"       = .qual_hex[c(2, 4, 6, 8, 10, 12)],
-  "umap"                    = c('#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0',
-                               '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8',
-                               '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'),
+  "umap"                    = c('#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4',
+                               '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9a6324', '#fffac8',
+                               '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'),
   "sequential"              = c("#d9ed92", "#52b69a", "#184e77"),
   "sequential-highcontrast" = c("#ffffff", "#d9ed92", "#52b69a", "#184e77"),
   "sequential-hc"           = c("#ffffff", "#d9ed92", "#52b69a", "#184e77"),
@@ -173,7 +173,279 @@ NULL
     )
 }
 
-# --- EXPORTED VISUALIZATION FUNCTIONS ---
+#' @rdname wulab_colors
+#' @param filename (Optional) Character. Output filename (e.g. \code{"wulab_palettes.pdf"}) to export the Letter-size reference guide to disk.
+#' @param dpi (Optional) Numeric. Resolution for raster exports (default = 300).
+#' @export
+show_wulab_colors <- function(filename = NULL, dpi = 300) {
+  
+  # Palette definitions
+  q_deep    <- .get_wulab_pal("qualitative-deep")
+  q_light   <- .get_wulab_pal("qualitative-light")
+  umap_hex  <- .get_wulab_pal("umap")
+  seq_pal   <- .get_wulab_pal("sequential")
+  seq_hc    <- .get_wulab_pal("sequential-highcontrast")
+  div_pal   <- .get_wulab_pal("diverging")
+  greys_hex <- c("G1" = "#f1f0f3", "G2" = "#c2ccd0", "G3" = "#808080")
+  
+  # Console Print Summary
+  cat("\n=======================================================\n")
+  cat("          WU LAB STANDARDIZED COLOR PALETTES          \n")
+  cat("=======================================================\n\n")
+  
+  cat("--- QUALITATIVE - PAIRED (DEEP / LIGHT) ---\n")
+  cat(paste(sprintf("[P%d] Deep: %s / Light: %s", 1:6, toupper(q_deep), toupper(q_light)), collapse = "\n"), "\n\n")
+  
+  cat("--- UMAP 20-COLOR ---\n")
+  cat(paste(sprintf("[C%02d] %s", 1:20, toupper(umap_hex)), collapse = "  "), "\n\n")
+  
+  cat("--- BACKGROUND GREYS ---\n")
+  cat(paste(sprintf("[%s] %s", names(greys_hex), toupper(unname(greys_hex))), collapse = "  "), "\n\n")
+  
+  cat("--- SEQUENTIAL ---\n")
+  cat("Key Stops:", paste(toupper(seq_pal), collapse = " -> "), "\n\n")
+  
+  cat("--- SEQUENTIAL HIGH-CONTRAST ---\n")
+  cat("Key Stops:", paste(toupper(seq_hc), collapse = " -> "), "\n\n")
+  
+  cat("--- DIVERGING ---\n")
+  cat("Key Stops:", paste(toupper(div_pal), collapse = " -> "), "\n")
+  cat("=======================================================\n\n")
+  
+  # Standardized uniform subplot theme across all 6 subplots
+  sub_theme <- theme_wulab() +
+    ggplot2::theme(
+      axis.line = ggplot2::element_blank(), axis.ticks = ggplot2::element_blank(),
+      axis.text = ggplot2::element_blank(), axis.title = ggplot2::element_blank(),
+      plot.title = ggplot2::element_text(size = 9.0, face = "bold", hjust = 0, margin = ggplot2::margin(b = 3)),
+      plot.subtitle = ggplot2::element_text(size = 7.8, color = "#005f73", face = "italic", hjust = 0, margin = ggplot2::margin(b = 3))
+    )
+
+  # Normalized X coordinate system (0 to 100)
+  X_START <- 25
+  X_END   <- 100
+  W_TOTAL <- X_END - X_START # 75
+
+  make_tiles <- function(n, y_val, labels, hex_vec) {
+    w_item <- W_TOTAL / n
+    x_centers <- X_START + (1:n - 0.5) * w_item
+    df <- data.frame(
+      id = 1:n,
+      label = labels,
+      hex = toupper(hex_vec),
+      x = x_centers,
+      y = y_val,
+      w = w_item * 0.92,
+      stringsAsFactors = FALSE
+    )
+    df$text_col <- vapply(df$hex, .get_text_col, FUN.VALUE = character(1))
+    return(df)
+  }
+
+  # --- Subplot 1: Qualitative Paired (6 items) ---
+  df_q1 <- make_tiles(6, 2, paste0("P", 1:6, " Deep"), q_deep)
+  df_q2 <- make_tiles(6, 1, paste0("P", 1:6, " Light"), q_light)
+  df_qual <- rbind(df_q1, df_q2)
+
+  p1 <- ggplot2::ggplot(df_qual) +
+    ggplot2::geom_tile(ggplot2::aes(x = x, y = y, fill = hex, width = w), color = "black", linewidth = 0.2, height = 0.55) +
+    ggplot2::geom_text(ggplot2::aes(x = x, y = y + 0.08, label = label, color = text_col), size = 2.0, fontface = "bold", family = "Arial") +
+    ggplot2::geom_text(ggplot2::aes(x = x, y = y - 0.12, label = hex, color = text_col), size = 2.0, fontface = "bold", family = "Arial") +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_color_identity() +
+    ggplot2::scale_x_continuous(limits = c(0, 100), expand = c(0,0)) +
+    ggplot2::scale_y_continuous(limits = c(0.3, 2.5), expand = c(0,0)) +
+    ggplot2::labs(
+      title = "Qualitative - Paired Colors (Deep for Points/Lines, Light for Fills)",
+      subtitle = "Usage: scale_color_wulab(type = \"qualitative-deep\") | scale_fill_wulab(type = \"qualitative-light\")"
+    ) +
+    sub_theme
+
+  # --- Subplot 2: UMAP 20-Color (10 items per row) ---
+  df_u1 <- make_tiles(10, 2, paste0("C", 1:10), umap_hex[1:10])
+  df_u2 <- make_tiles(10, 1, paste0("C", 11:20), umap_hex[11:20])
+  df_umap <- rbind(df_u1, df_u2)
+
+  p2 <- ggplot2::ggplot(df_umap) +
+    ggplot2::geom_tile(ggplot2::aes(x = x, y = y, fill = hex, width = w), color = "black", linewidth = 0.2, height = 0.55) +
+    ggplot2::geom_text(ggplot2::aes(x = x, y = y + 0.08, label = label, color = text_col), size = 2.0, fontface = "bold", family = "Arial") +
+    ggplot2::geom_text(ggplot2::aes(x = x, y = y - 0.12, label = hex, color = text_col), size = 2.0, fontface = "bold", family = "Arial") +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_color_identity() +
+    ggplot2::scale_x_continuous(limits = c(0, 100), expand = c(0,0)) +
+    ggplot2::scale_y_continuous(limits = c(0.3, 2.5), expand = c(0,0)) +
+    ggplot2::labs(
+      title = "UMAP 20-Color Cluster Palette",
+      subtitle = "Usage: scale_color_wulab(type = \"umap\") | scale_fill_wulab(type = \"umap\")"
+    ) +
+    sub_theme
+
+  # --- Subplot 3: Background Greys (3 tiles matching Qualitative tile width/height) ---
+  # y=1.5 = center of shared y-range c(0.3,2.5); same height=0.55 as all other tiles
+  w_q_tile <- W_TOTAL / 6
+  df_greys <- data.frame(
+    name = names(greys_hex),
+    hex = toupper(unname(greys_hex)),
+    x = X_START + (1:3 - 0.5) * w_q_tile,
+    y = 1.5,
+    w = w_q_tile * 0.92,
+    stringsAsFactors = FALSE
+  )
+  df_greys$text_col <- vapply(df_greys$hex, .get_text_col, FUN.VALUE = character(1))
+
+  p3 <- ggplot2::ggplot(df_greys) +
+    ggplot2::geom_tile(ggplot2::aes(x = x, y = y, fill = hex, width = w), color = "black", linewidth = 0.2, height = 0.55) +
+    ggplot2::geom_text(ggplot2::aes(x = x, y = y + 0.08, label = name, color = text_col), size = 2.0, fontface = "bold", family = "Arial") +
+    ggplot2::geom_text(ggplot2::aes(x = x, y = y - 0.12, label = hex, color = text_col), size = 2.0, fontface = "bold", family = "Arial") +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_color_identity() +
+    ggplot2::scale_x_continuous(limits = c(0, 100), expand = c(0,0)) +
+    ggplot2::scale_y_continuous(limits = c(0.3, 2.5), expand = c(0,0)) +
+    ggplot2::labs(
+      title = "Standardized Background Greys (Missing / NA Value Fills)",
+      subtitle = "Usage: scale_fill_wulab(..., na.color = \"G1\")  [Options: \"G1\" (#F1F0F3), \"G2\" (#C2CCD0), \"G3\" (#808080)]"
+    ) +
+    sub_theme
+
+  # --- Subplot 4: Sequential Palette ---
+  # Colorbar: n=200 tiles each of width dx; centers offset by +dx/2 from cb_left so
+  # left edge of tile-1 = cb_left exactly, right edge of tile-200 = cb_right exactly.
+  # cb_left/right = outer edges of the discrete bins (4% half-gap of tile width on each side)
+  seq_n_disc <- 9
+  seq_w_item  <- W_TOTAL / seq_n_disc
+  seq_cb_left  <- X_START + 0.04 * seq_w_item
+  seq_cb_right <- X_END   - 0.04 * seq_w_item
+  seq_cb_dx    <- (seq_cb_right - seq_cb_left) / 200
+  seq_cols     <- grDevices::colorRampPalette(seq_pal)(200)
+  df_seq_cont  <- data.frame(
+    x   = seq_cb_left + (seq_len(200) - 0.5) * seq_cb_dx,
+    y   = 2.0,
+    col = seq_cols,
+    w   = seq_cb_dx
+  )
+  df_seq_disc <- make_tiles(seq_n_disc, 1.0, "", grDevices::colorRampPalette(seq_pal)(seq_n_disc))
+
+  p4 <- ggplot2::ggplot() +
+    ggplot2::geom_tile(data = df_seq_cont, ggplot2::aes(x = x, y = y, fill = col, width = w), height = 0.55) +
+    ggplot2::annotate("rect", xmin = seq_cb_left, xmax = seq_cb_right, ymin = 2.0 - 0.275, ymax = 2.0 + 0.275, fill = NA, color = "black", linewidth = 0.2) +
+    ggplot2::geom_tile(data = df_seq_disc, ggplot2::aes(x = x, y = y, fill = hex, width = w), color = "black", linewidth = 0.2, height = 0.55) +
+    ggplot2::geom_text(data = df_seq_disc, ggplot2::aes(x = x, y = y - 0.38, label = hex), size = 2.0, fontface = "bold", family = "Arial") +
+    ggplot2::annotate("text", x = X_START - 1.5, y = 2.0, label = "Continuous Gradient:", size = 2.2, fontface = "bold", hjust = 1, family = "Arial") +
+    ggplot2::annotate("text", x = X_START - 1.5, y = 1.0, label = "Discrete Bins (n=9, customizable via n):", size = 2.2, fontface = "bold", hjust = 1, family = "Arial") +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_x_continuous(limits = c(0, 100), expand = c(0,0)) +
+    ggplot2::scale_y_continuous(limits = c(0.3, 2.5), expand = c(0,0)) +
+    ggplot2::labs(
+      title = "Sequential Palette (Creamy Avocado to Moroccan Blue)",
+      subtitle = "Usage: scale_fill_wulab(type = \"sequential\") | scale_color_wulab(type = \"sequential\")"
+    ) +
+    sub_theme
+
+  # --- Subplot 5: Sequential High-Contrast Palette ---
+  seq_hc_n_disc  <- 9
+  seq_hc_w_item  <- W_TOTAL / seq_hc_n_disc
+  seq_hc_cb_left  <- X_START + 0.04 * seq_hc_w_item
+  seq_hc_cb_right <- X_END   - 0.04 * seq_hc_w_item
+  seq_hc_cb_dx    <- (seq_hc_cb_right - seq_hc_cb_left) / 200
+  seq_hc_cols     <- grDevices::colorRampPalette(seq_hc)(200)
+  df_seq_hc_cont  <- data.frame(
+    x   = seq_hc_cb_left + (seq_len(200) - 0.5) * seq_hc_cb_dx,
+    y   = 2.0,
+    col = seq_hc_cols,
+    w   = seq_hc_cb_dx
+  )
+  df_seq_hc_disc <- make_tiles(seq_hc_n_disc, 1.0, "", grDevices::colorRampPalette(seq_hc)(seq_hc_n_disc))
+
+  p5 <- ggplot2::ggplot() +
+    ggplot2::geom_tile(data = df_seq_hc_cont, ggplot2::aes(x = x, y = y, fill = col, width = w), height = 0.55) +
+    ggplot2::annotate("rect", xmin = seq_hc_cb_left, xmax = seq_hc_cb_right, ymin = 2.0 - 0.275, ymax = 2.0 + 0.275, fill = NA, color = "black", linewidth = 0.2) +
+    ggplot2::geom_tile(data = df_seq_hc_disc, ggplot2::aes(x = x, y = y, fill = hex, width = w), color = "black", linewidth = 0.2, height = 0.55) +
+    ggplot2::geom_text(data = df_seq_hc_disc, ggplot2::aes(x = x, y = y - 0.38, label = hex), size = 2.0, fontface = "bold", family = "Arial") +
+    ggplot2::annotate("text", x = X_START - 1.5, y = 2.0, label = "Continuous Gradient:", size = 2.2, fontface = "bold", hjust = 1, family = "Arial") +
+    ggplot2::annotate("text", x = X_START - 1.5, y = 1.0, label = "Discrete Bins (n=9, customizable via n):", size = 2.2, fontface = "bold", hjust = 1, family = "Arial") +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_x_continuous(limits = c(0, 100), expand = c(0,0)) +
+    ggplot2::scale_y_continuous(limits = c(0.3, 2.5), expand = c(0,0)) +
+    ggplot2::labs(
+      title = "Sequential High-Contrast Palette (Pure White #FFFFFF to Moroccan Blue)",
+      subtitle = "Usage: scale_fill_wulab(type = \"sequential-hc\") [Ideal for unidirectional heatmaps with white baseline]"
+    ) +
+    sub_theme
+
+  # --- Subplot 6: Diverging Palette ---
+  div_n_disc  <- 9
+  div_w_item  <- W_TOTAL / div_n_disc
+  div_cb_left  <- X_START + 0.04 * div_w_item
+  div_cb_right <- X_END   - 0.04 * div_w_item
+  div_cb_dx    <- (div_cb_right - div_cb_left) / 200
+  div_cols     <- grDevices::colorRampPalette(div_pal)(200)
+  df_div_cont  <- data.frame(
+    x   = div_cb_left + (seq_len(200) - 0.5) * div_cb_dx,
+    y   = 2.0,
+    col = div_cols,
+    w   = div_cb_dx
+  )
+  df_div_disc <- make_tiles(div_n_disc, 1.0, "", grDevices::colorRampPalette(div_pal)(div_n_disc))
+
+  p6 <- ggplot2::ggplot() +
+    ggplot2::geom_tile(data = df_div_cont, ggplot2::aes(x = x, y = y, fill = col, width = w), height = 0.55) +
+    ggplot2::annotate("rect", xmin = div_cb_left, xmax = div_cb_right, ymin = 2.0 - 0.275, ymax = 2.0 + 0.275, fill = NA, color = "black", linewidth = 0.2) +
+    ggplot2::geom_tile(data = df_div_disc, ggplot2::aes(x = x, y = y, fill = hex, width = w), color = "black", linewidth = 0.2, height = 0.55) +
+    ggplot2::geom_text(data = df_div_disc, ggplot2::aes(x = x, y = y - 0.38, label = hex), size = 2.0, fontface = "bold", family = "Arial") +
+    ggplot2::annotate("text", x = X_START - 1.5, y = 2.0, label = "Continuous Gradient:", size = 2.2, fontface = "bold", hjust = 1, family = "Arial") +
+    ggplot2::annotate("text", x = X_START - 1.5, y = 1.0, label = "Discrete Bins (n=9, customizable via n):", size = 2.2, fontface = "bold", hjust = 1, family = "Arial") +
+    ggplot2::scale_fill_identity() +
+    ggplot2::scale_x_continuous(limits = c(0, 100), expand = c(0,0)) +
+    ggplot2::scale_y_continuous(limits = c(0.3, 2.5), expand = c(0,0)) +
+    ggplot2::labs(
+      title = "Diverging Palette (Orange-Red to Blue-Cyan via White #FFFFFF Midpoint)",
+      subtitle = "Usage: scale_fill_wulab(type = \"diverging\", midpoint = 0) | scale_color_wulab(type = \"diverging\", midpoint = 0)"
+    ) +
+    sub_theme
+
+  # Stack all 6 subplots vertically using equal panel heights.
+  # All subplots share y-limits c(0.3, 2.5) and height=0.55 so tiles are
+  # physically identical in size across every palette row.
+  grobs <- list(ggplot2::ggplotGrob(p1), ggplot2::ggplotGrob(p2), ggplot2::ggplotGrob(p3),
+                ggplot2::ggplotGrob(p4), ggplot2::ggplotGrob(p5), ggplot2::ggplotGrob(p6))
+
+  max_width <- do.call(grid::unit.pmax, lapply(grobs, function(g) g$widths))
+  for (i in seq_along(grobs)) {
+    grobs[[i]]$widths <- max_width
+  }
+
+  stacked_gt <- do.call(rbind, grobs)
+
+  # Create standalone top title grob for the entire page
+  title_grob <- grid::textGrob(
+    "Wu Lab Standardized Color Palettes",
+    gp = grid::gpar(fontsize = 13, fontface = "bold", fontfamily = "Arial")
+  )
+  
+  # Insert top title into gtable layout
+  final_gtable <- gtable::gtable_add_rows(stacked_gt, heights = grid::unit(0.4, "in"), pos = 0)
+  final_gtable <- gtable::gtable_add_grob(
+    final_gtable,
+    title_grob,
+    t = 1, l = 1, r = ncol(final_gtable),
+    clip = "off", name = "main_page_title"
+  )
+
+  # Add 0.5 inch page margins around the entire Letter page
+  final_gtable <- gtable::gtable_add_padding(final_gtable, grid::unit(c(0.4, 0.5, 0.5, 0.5), "in"))
+
+  # Draw directly to active graphics device (e.g. RStudio Plots pane)
+  tryCatch({
+    grid::grid.newpage()
+    grid::grid.draw(final_gtable)
+  }, error = function(e) invisible(NULL))
+
+  if (!is.null(filename)) {
+    save_wulab(filename, final_gtable, custom_width = 21.59, custom_height = 27.94, dpi = dpi)
+  }
+
+  invisible(final_gtable)
+}
 
 #' @rdname wulab_colors
 #' @export
@@ -261,7 +533,6 @@ show_color_umap <- function() {
       real_sc <- do.call(
         ggplot2::discrete_scale,
         c(list(aesthetics = self$aesthetics,
-               scale_name = "wulab",
                palette = .get_pal_fn(self$type, pal_vec),
                na.value = na_val), self$args)
       )
@@ -389,7 +660,7 @@ scale_color_wulab <- function(type = "qualitative-deep", discrete = NULL, na.col
   if (isTRUE(discrete)) {
     pal_vec <- .get_wulab_pal(type, reverse)
     na_val  <- .get_na_color(na.color)
-    ggplot2::discrete_scale("colour", "wulab",
+    ggplot2::discrete_scale(aesthetics = "colour",
                             palette = .get_pal_fn(type, pal_vec),
                             na.value = na_val, ...)
   } else if (isFALSE(discrete)) {
@@ -416,7 +687,7 @@ scale_fill_wulab <- function(type = "qualitative-light", discrete = NULL, na.col
   if (isTRUE(discrete)) {
     pal_vec <- .get_wulab_pal(type, reverse)
     na_val  <- .get_na_color(na.color)
-    ggplot2::discrete_scale("fill", "wulab",
+    ggplot2::discrete_scale(aesthetics = "fill",
                             palette = .get_pal_fn(type, pal_vec),
                             na.value = na_val, ...)
   } else if (isFALSE(discrete)) {
