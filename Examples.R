@@ -10,7 +10,7 @@ p_qual <- ggplot(mtcars, aes(x = cyl_fact, y = mpg, fill = cyl_fact)) +
   labs(title = "Example 1", x = "Number of Cylinders", y = "Miles Per Gallon") +
   theme_wulab() +
   theme(legend.position = "none")
-save_wulab(p_qual, type = "2x2", filename = "Example 1.pdf")
+save_wulab(p_qual, type = "2x2", filename = "Example_images/Example 1.pdf")
 
 # --- Example 2: Qualitative Line Plot ---
 df_line <- mtcars %>%
@@ -25,7 +25,7 @@ p_line_standard <- ggplot(df_line, aes(x = obs_id, y = mpg, color = cyl_fact)) +
   scale_color_wulab(type = "qualitative-deep") +
   labs(title = "Example 2", x = "Observation Index", y = "Miles Per Gallon", color = "Cylinders") +
   theme_wulab()
-save_wulab(p_line_standard, type = "2x2", filename = "Example 2.pdf")
+save_wulab(p_line_standard, type = "2x2", filename = "Example_images/Example 2.pdf")
 
 # --- Example 3: Sequential Bar Plot ---
 df_5bar <- mtcars
@@ -36,7 +36,7 @@ p_5bar <- ggplot(df_5bar, aes(x = hp_group, y = mpg, fill = hp_group)) +
   labs(title = "Example 3", x = "Horsepower Quintiles", y = "Mean MPG") +
   theme_wulab() +
   theme(axis.text.x = element_blank())
-save_wulab(p_5bar, type = "2.58x2", filename = "Example 3.pdf")
+save_wulab(p_5bar, type = "2.58x2", filename = "Example_images/Example 3.pdf")
 
 # --- Example 4: Diverging Continuous Bar Plot (Auto Zero-Anchored Midpoint) ---
 mtcars$mpg_z <- (mtcars$mpg - mean(mtcars$mpg)) / sd(mtcars$mpg)
@@ -48,7 +48,7 @@ p_div <- ggplot(mtcars[1:10, ], aes(x = reorder(car_name, mpg_z), y = mpg_z, fil
   labs(title = "Example 4", x = NULL, y = "Z-score") +
   theme_wulab() +
   theme(legend.position = "none")
-save_wulab(p_div, type = "2x4.9", filename = "Example 4.pdf")
+save_wulab(p_div, type = "2x4.9", filename = "Example_images/Example 4.pdf")
 
 # --- Example 5: UMAP 20-Color Cluster Plot ---
 set.seed(42)
@@ -66,7 +66,7 @@ p_umap <- ggplot(df_umap, aes(x = UMAP1, y = UMAP2, color = Cluster)) +
   theme_wulab() +
   labs(title = "Example 5", x = "UMAP 1", y = "UMAP 2") +
   theme(legend.position = "none")
-save_wulab(p_umap, type = "4.9x4.9", filename = "Example 5.pdf")
+save_wulab(p_umap, type = "4.9x4.9", filename = "Example_images/Example 5.pdf")
 
 # --- Example 6: Faceted Multi-Panel Smooth Plot ---
 mtcars$cyl_fact <- as.factor(mtcars$cyl)
@@ -79,7 +79,7 @@ p_facet <- ggplot(mtcars, aes(x = wt, y = mpg, color = cyl_fact, fill = cyl_fact
   labs(title = "Example 6", x = "Weight (1000 lbs)", y = "MPG") +
   theme_wulab() +
   theme(legend.position = "none")
-save_wulab(p_facet, type = "2x2", filename = "Example 6.pdf")
+save_wulab(p_facet, type = "2x2", filename = "Example_images/Example 6.pdf")
 
 # --- Example 7: High-Contrast Sequential Heatmap (Zero-Baseline) ---
 set.seed(42)
@@ -104,11 +104,12 @@ p_hm <- ggplot(df_hm, aes(x = Sample, y = Gene, fill = Expression)) +
   labs(title = "Example 7", x = NULL, y = NULL) +
   theme_wulab() +
   theme(
+    panel.border = element_rect(color = "black", fill = NA),
     axis.line = element_blank(),   # No x/y axis lines
     axis.ticks = element_blank(),  # No x/y axis ticks
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
-save_wulab(p_hm, type = "2x2", filename = "Example 7.pdf")
+save_wulab(p_hm, type = "2x2", filename = "Example_images/Example 7.pdf")
 
 
 
