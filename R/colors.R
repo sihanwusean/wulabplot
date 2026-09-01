@@ -514,6 +514,8 @@ show_color_umap <- function() {
   na.color = "G2",
   reverse = FALSE,
   midpoint = NULL,
+  limits = NULL,
+  oob = scales::squish,
   args = list(),
   actual_scale = NULL,
 
@@ -530,6 +532,9 @@ show_color_umap <- function() {
     na_val  <- .get_na_color(self$na.color)
 
     if (is_disc) {
+      if (!is.null(self$limits)) {
+        warning("limits parameter is intended for continuous scales and is ignored for discrete data.")
+      }
       real_sc <- do.call(
         ggplot2::discrete_scale,
         c(list(aesthetics = self$aesthetics,
@@ -537,6 +542,12 @@ show_color_umap <- function() {
                na.value = na_val), self$args)
       )
     } else {
+      scale_args <- self$args
+      if (!is.null(self$limits)) {
+        if (!"limits" %in% names(scale_args)) scale_args$limits <- self$limits
+        if (!"oob" %in% names(scale_args)) scale_args$oob <- self$oob
+      }
+
       if (self$type == "diverging") {
         mid_val  <- if (is.null(self$midpoint)) 0 else self$midpoint
         low_col  <- pal_vec[1]
@@ -547,25 +558,25 @@ show_color_umap <- function() {
           real_sc <- do.call(
             ggplot2::scale_fill_gradient2,
             c(list(low = low_col, mid = mid_col, high = high_col,
-                   midpoint = mid_val, na.value = na_val), self$args)
+                   midpoint = mid_val, na.value = na_val), scale_args)
           )
         } else {
           real_sc <- do.call(
             ggplot2::scale_color_gradient2,
             c(list(low = low_col, mid = mid_col, high = high_col,
-                   midpoint = mid_val, na.value = na_val), self$args)
+                   midpoint = mid_val, na.value = na_val), scale_args)
           )
         }
       } else {
         if ("fill" %in% self$aesthetics) {
           real_sc <- do.call(
             ggplot2::scale_fill_gradientn,
-            c(list(colors = pal_vec, na.value = na_val), self$args)
+            c(list(colors = pal_vec, na.value = na_val), scale_args)
           )
         } else {
           real_sc <- do.call(
             ggplot2::scale_color_gradientn,
-            c(list(colors = pal_vec, na.value = na_val), self$args)
+            c(list(colors = pal_vec, na.value = na_val), scale_args)
           )
         }
       }
@@ -654,10 +665,15 @@ show_color_umap <- function() {
 #' \code{"G2"} (medium, default), \code{"G3"} (darkest), \code{"white"}, or \code{"black"}.
 #' @param reverse (Optional) Logical. \code{FALSE} by default. If \code{TRUE}, reverses the palette order.
 #' @param midpoint (Optional) Numeric or NULL. Midpoint value for continuous diverging scales (defaults to \code{0} when \code{type = "diverging"}). Ignored for non-diverging scales.
+#' @param limits (Optional) Numeric vector of length 2. Defines the continuous data range limits. Values outside these limits will automatically be squished to the minimum/maximum palette colors (via \code{oob = scales::squish}). Ignored with a warning for discrete scales.
+#' @param oob (Optional) Function. Out-of-bounds handling function for continuous scales. Defaults to \code{scales::squish}.
 #' @param ... Other arguments passed to \code{discrete_scale}, \code{scale_fill_gradient2}, or \code{scale_fill_gradientn}.
 #' @export
-scale_color_wulab <- function(type = "qualitative-deep", discrete = NULL, na.color = "G2", reverse = FALSE, midpoint = NULL, ...) {
+scale_color_wulab <- function(type = "qualitative-deep", discrete = NULL, na.color = "G2", reverse = FALSE, midpoint = NULL, limits = NULL, oob = scales::squish, ...) {
   if (isTRUE(discrete)) {
+    if (!is.null(limits)) {
+      warning("limits parameter is intended for continuous scales and is ignored for discrete data.")
+    }
     pal_vec <- .get_wulab_pal(type, reverse)
     na_val  <- .get_na_color(na.color)
     ggplot2::discrete_scale(aesthetics = "colour",
@@ -666,25 +682,36 @@ scale_color_wulab <- function(type = "qualitative-deep", discrete = NULL, na.col
   } else if (isFALSE(discrete)) {
     pal_vec <- .get_wulab_pal(type, reverse)
     na_val  <- .get_na_color(na.color)
+    scale_args <- list(...)
+    if (!is.null(limits)) {
+      if (!"limits" %in% names(scale_args)) scale_args$limits <- limits
+      if (!"oob" %in% names(scale_args)) scale_args$oob <- oob
+    }
+
     if (type == "diverging") {
       mid_val  <- if (is.null(midpoint)) 0 else midpoint
       low_col  <- pal_vec[1]
       mid_col  <- if (length(pal_vec) >= 3) pal_vec[2] else "#ffffff"
       high_col <- if (length(pal_vec) >= 3) pal_vec[3] else pal_vec[length(pal_vec)]
-      ggplot2::scale_color_gradient2(low = low_col, mid = mid_col, high = high_col,
-                                     midpoint = mid_val, na.value = na_val, ...)
+      do.call(ggplot2::scale_color_gradient2,
+              c(list(low = low_col, mid = mid_col, high = high_col,
+                     midpoint = mid_val, na.value = na_val), scale_args))
     } else {
-      ggplot2::scale_color_gradientn(colors = pal_vec, na.value = na_val, ...)
+      do.call(ggplot2::scale_color_gradientn,
+              c(list(colors = pal_vec, na.value = na_val), scale_args))
     }
   } else {
-    ggplot2::ggproto(NULL, .ScaleWulabAuto, aesthetics = "colour", type = type, na.color = na.color, reverse = reverse, midpoint = midpoint, args = list(...))
+    ggplot2::ggproto(NULL, .ScaleWulabAuto, aesthetics = "colour", type = type, na.color = na.color, reverse = reverse, midpoint = midpoint, limits = limits, oob = oob, args = list(...))
   }
 }
 
 #' @rdname wulab_colors
 #' @export
-scale_fill_wulab <- function(type = "qualitative-light", discrete = NULL, na.color = "G2", reverse = FALSE, midpoint = NULL, ...) {
+scale_fill_wulab <- function(type = "qualitative-light", discrete = NULL, na.color = "G2", reverse = FALSE, midpoint = NULL, limits = NULL, oob = scales::squish, ...) {
   if (isTRUE(discrete)) {
+    if (!is.null(limits)) {
+      warning("limits parameter is intended for continuous scales and is ignored for discrete data.")
+    }
     pal_vec <- .get_wulab_pal(type, reverse)
     na_val  <- .get_na_color(na.color)
     ggplot2::discrete_scale(aesthetics = "fill",
@@ -693,17 +720,25 @@ scale_fill_wulab <- function(type = "qualitative-light", discrete = NULL, na.col
   } else if (isFALSE(discrete)) {
     pal_vec <- .get_wulab_pal(type, reverse)
     na_val  <- .get_na_color(na.color)
+    scale_args <- list(...)
+    if (!is.null(limits)) {
+      if (!"limits" %in% names(scale_args)) scale_args$limits <- limits
+      if (!"oob" %in% names(scale_args)) scale_args$oob <- oob
+    }
+
     if (type == "diverging") {
       mid_val  <- if (is.null(midpoint)) 0 else midpoint
       low_col  <- pal_vec[1]
       mid_col  <- if (length(pal_vec) >= 3) pal_vec[2] else "#ffffff"
       high_col <- if (length(pal_vec) >= 3) pal_vec[3] else pal_vec[length(pal_vec)]
-      ggplot2::scale_fill_gradient2(low = low_col, mid = mid_col, high = high_col,
-                                    midpoint = mid_val, na.value = na_val, ...)
+      do.call(ggplot2::scale_fill_gradient2,
+              c(list(low = low_col, mid = mid_col, high = high_col,
+                     midpoint = mid_val, na.value = na_val), scale_args))
     } else {
-      ggplot2::scale_fill_gradientn(colors = pal_vec, na.value = na_val, ...)
+      do.call(ggplot2::scale_fill_gradientn,
+              c(list(colors = pal_vec, na.value = na_val), scale_args))
     }
   } else {
-    ggplot2::ggproto(NULL, .ScaleWulabAuto, aesthetics = "fill", type = type, na.color = na.color, reverse = reverse, midpoint = midpoint, args = list(...))
+    ggplot2::ggproto(NULL, .ScaleWulabAuto, aesthetics = "fill", type = type, na.color = na.color, reverse = reverse, midpoint = midpoint, limits = limits, oob = oob, args = list(...))
   }
 }

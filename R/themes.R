@@ -18,7 +18,7 @@
 #' @section Standardized Typography:
 #' \itemize{
 #'   \item \bold{Axis Titles/Text}: 6 pt Arial
-#'   \item \bold{Plot Titles}: 7 pt Bold Arial (centered)
+#'   \item \bold{Plot Titles}: 7 pt Arial (centered)
 #'   \item \bold{Legend Text}: 6 pt Arial
 #'   \item \bold{Facet Strips}: 7 pt Arial
 #' }
@@ -54,7 +54,7 @@ theme_wulab <- function() {
       legend.text = ggplot2::element_text(size = 6),
       plot.title = ggplot2::element_text(
         size = 7,
-        face = "bold",
+        face = "plain",
         hjust = 0.5,
         margin = ggplot2::margin(b = 3.5, unit = "pt")
       ),
