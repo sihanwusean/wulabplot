@@ -11,6 +11,7 @@ save_wulab(
   custom_width = NULL,
   custom_height = NULL,
   dpi = 300,
+  match_colorbar = TRUE,
   p = NULL
 )
 }
@@ -27,6 +28,8 @@ Can be passed as the first positional argument (matching \code{ggsave}), or omit
 \item{custom_height}{(Optional) Numeric. Manual height for the panel in cm.}
 
 \item{dpi}{(Optional) Numeric. Resolution for raster formats (PNG/TIFF). Default is 300.}
+
+\item{match_colorbar}{(Optional) Logical. If \code{TRUE} (default), automatically scales continuous colorbar legends to match the exact panel dimension (height for vertical colorbars, width for horizontal colorbars) with symmetrical alignment.}
 
 \item{p}{Deprecated/Legacy parameter for specifying the plot object. Maintained for backwards compatibility.}
 }

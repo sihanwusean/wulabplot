@@ -30,6 +30,8 @@ scale_color_wulab(
   na.color = "G2",
   reverse = FALSE,
   midpoint = NULL,
+  limits = NULL,
+  oob = scales::squish,
   ...
 )
 
@@ -39,6 +41,8 @@ scale_fill_wulab(
   na.color = "G2",
   reverse = FALSE,
   midpoint = NULL,
+  limits = NULL,
+  oob = scales::squish,
   ...
 )
 }
@@ -62,6 +66,10 @@ scale_fill_wulab(
 \item{reverse}{(Optional) Logical. \code{FALSE} by default. If \code{TRUE}, reverses the palette order.}
 
 \item{midpoint}{(Optional) Numeric or NULL. Midpoint value for continuous diverging scales (defaults to \code{0} when \code{type = "diverging"}). Ignored for non-diverging scales.}
+
+\item{limits}{(Optional) Numeric vector of length 2. Defines the continuous data range limits. Values outside these limits will automatically be squished to the minimum/maximum palette colors (via \code{oob = scales::squish}). Ignored with a warning for discrete scales.}
+
+\item{oob}{(Optional) Function. Out-of-bounds handling function for continuous scales. Defaults to \code{scales::squish}.}
 
 \item{...}{Other arguments passed to \code{discrete_scale}, \code{scale_fill_gradient2}, or \code{scale_fill_gradientn}.}
 }

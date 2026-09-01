@@ -6,9 +6,9 @@ For more layout information, please refer to the `plotting standard.ai` Illustra
 
 ## Features
 
-* **Precision Theme**: `theme_wulab()` implements 6 pt Arial base fonts, perfectly scaled 0.5 pt axis lines, and calibrated title spacing. It removes all background rectangles to provide a transparent background for seamless editing in Adobe Illustrator.
-* **Absolute Panel Sizing**: `save_wulab()` forces figure panels to exact centimeter dimensions, ensuring identical data areas regardless of axis label length or faceting. Features flexible argument syntax (matching `ggsave`) and sensible default behaviors.
-* **Color Standards & Unified Visualizer**: Built-in scales for qualitative, sequential, high-contrast, and diverging palettes with automatic data-type (discrete vs. continuous) recognition. Includes `show_wulab_colors()` to display all lab palettes on a single printable Letter-size reference guide.
+* **Precision Theme**: `theme_wulab()` implements 6 pt Arial base fonts, 7 pt plain Arial plot titles, perfectly scaled 0.5 pt axis lines, and calibrated title spacing. It removes all background rectangles to provide a transparent background for seamless editing in Adobe Illustrator.
+* **Absolute Panel Sizing & Auto Colorbar Matching**: `save_wulab()` forces figure panels to exact centimeter dimensions, ensuring identical data areas regardless of axis label length or faceting. Automatically scales continuous colorbars to match the exact panel dimension (`match_colorbar = TRUE`).
+* **Color Standards & Continuous Limits**: Built-in scales for qualitative, sequential, high-contrast, and diverging palettes with automatic data-type recognition, zero-anchored diverging midpoints, and continuous `limits` clamping with automatic out-of-bounds squishing (`scales::squish`). Includes `show_wulab_colors()` for a printable Letter-size reference guide.
 
 ## Installation
 
@@ -37,11 +37,17 @@ devtools::install_github("sihanwusean/wulabplot")
 
 1. Save with Forced Dimensions
 
-    The `save_wulab()` function is facet-aware and ensures every panel in the plot matches your requested size.
+    The `save_wulab()` function is facet-aware and ensures every panel in the plot matches your requested size. It also automatically scales continuous colorbars to match the panel length.
 
     ```r
     # Save the last plot as a standard 2x2 cm square
     save_wulab(type = "2x2", filename = "Figure_1.pdf")
+
+    # Save a heatmap with panel-matched colorbar dimensions
+    save_wulab("Heatmap.pdf", p_heatmap, type = "4.9x4.9")
+
+    # Custom panel dimensions (in cm) for specialized layouts
+    save_wulab("Custom_Plot.pdf", p, custom_width = 3.5, custom_height = 2.5)
     ```
 
     Standard Presets (Width x Height in cm):
@@ -88,17 +94,17 @@ devtools::install_github("sihanwusean/wulabplot")
    # Choose from qualitative-pair, qualitative-deep, qualitative-light, sequential, 
    # sequential-highcontrast (or sequential-hc), diverging, and umap.
    # Automatically detects discrete factors/characters vs continuous numeric vectors.
-   # Supports midpoint anchoring for diverging scales (defaulting to 0 for continuous scales).
+   # Supports midpoint anchoring and continuous limits with automatic out-of-bounds squishing.
 
    scale_fill_wulab(type = "qualitative-light") 
    scale_color_wulab(type = "qualitative-deep")
-   scale_fill_wulab(type = "sequential-hc") # High-contrast heatmap palette starting from white
-   scale_fill_wulab(type = "diverging", midpoint = 0) # Zero-anchored continuous diverging scale
+   scale_fill_wulab(type = "sequential-hc", limits = c(0, 100)) # High-contrast heatmap palette
+   scale_fill_wulab(type = "diverging", midpoint = 0, limits = c(-2, 2)) # Zero-anchored continuous scale
    ```
 
 ## Technical Standards
 
-* **Typography:** Axis titles/text are set to 6-pt Arial; plot titles are 7-pt bold Arial with calibrated bottom spacing (`margin(b = 3.5, unit = "pt")`).
+* **Typography:** Axis titles/text are set to 6-pt Arial; plot titles are 7-pt Arial (plain face) with calibrated bottom spacing (`margin(b = 3.5, unit = "pt")`).
 
 * **Line Weights:** Axis lines and ticks are precisely calculated using a DPI scaling factor to ensure they appear as exactly 0.5-pt in vector software.
 
@@ -123,6 +129,15 @@ Use `Examples.R` to reproduce the examples below. This plotting style enables (a
 External users are welcome to use the package as-is under the MIT License, but should do so with the understanding that it is a specialized tool for our specific research context.
 
 ## Changelog
+
+* **Version 0.7.0** - September 1, 2026
+
+  **New Features & Enhancements**:
+
+  * **Continuous Limits & Out-Of-Bounds Handling (`limits`)**: Added the `limits = c(min, max)` parameter to `scale_color_wulab()` and `scale_fill_wulab()`. For continuous scales, out-of-bounds values are automatically squished to the extreme palette colors (`oob = scales::squish`) rather than mapped to missing values. Issues a validation warning if `limits` is passed to discrete scales.
+  * **Automatic Colorbar Dimension Matching (`match_colorbar = TRUE`)**: `save_wulab()` now automatically resizes continuous colorbar legends to match the exact dimensions of the data panel (height for vertical colorbars, width for horizontal colorbars) with symmetrical padding balancing, ensuring perfect alignment with the X-Y coordinate bounds without manual configuration.
+  * **Standardized Plain Plot Titles**: Updated `plot.title` in `theme_wulab()` to use `face = "plain"` (7-pt regular Arial, centered) instead of bold font, keeping visual focus on the data.
+  * **Enhanced Dimension Error Guidance**: Improved `save_wulab()` error messaging when an unsupported `type` is supplied, explicitly guiding users to choose from standard presets or use `custom_width` and `custom_height` for non-standard plot layouts.
 
 * **Version 0.6.0** - July 31, 2026
 

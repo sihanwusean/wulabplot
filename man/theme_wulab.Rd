@@ -28,7 +28,7 @@ in vector software.
 
 \itemize{
   \item \bold{Axis Titles/Text}: 6 pt Arial
-  \item \bold{Plot Titles}: 7 pt Bold Arial (centered)
+  \item \bold{Plot Titles}: 7 pt Arial (centered)
   \item \bold{Legend Text}: 6 pt Arial
   \item \bold{Facet Strips}: 7 pt Arial
 }

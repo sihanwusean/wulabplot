@@ -14,6 +14,7 @@
 #' @param custom_width (Optional) Numeric. Manual width for the panel in cm.
 #' @param custom_height (Optional) Numeric. Manual height for the panel in cm.
 #' @param dpi (Optional) Numeric. Resolution for raster formats (PNG/TIFF). Default is 300.
+#' @param match_colorbar (Optional) Logical. If \code{TRUE} (default), automatically scales continuous colorbar legends to match the exact panel dimension (height for vertical colorbars, width for horizontal colorbars) with symmetrical alignment.
 #' @param p Deprecated/Legacy parameter for specifying the plot object. Maintained for backwards compatibility.
 #'
 #' @details
@@ -57,6 +58,7 @@ save_wulab <- function(filename = NULL,
                        custom_width = NULL,
                        custom_height = NULL,
                        dpi = 300,
+                       match_colorbar = TRUE,
                        p = NULL) {
 
   # 1. Flexible Argument Resolution (Supports filename as 1st arg or plot as 1st arg)
@@ -139,11 +141,15 @@ save_wulab <- function(filename = NULL,
     ph <- custom_height
   } else {
     if (is.null(type)) {
-      warning("Wu Lab Warning: 'type' parameter was omitted; defaulting to '2x2' cm. Please specify 'type' explicitly (e.g., type = \"2x2\", \"2.58x2\", \"2x4.9\", \"4.9x2\", \"4.9x4.9\") or provide custom dimensions.", call. = FALSE)
+      warning("Wu Lab Warning: 'type' parameter was omitted; defaulting to '2x2' cm. Please specify 'type' explicitly (e.g., type = \"2x2\", \"2.58x2\", \"2x4.9\", \"4.9x2\", \"4.9x4.9\") or provide custom dimensions (custom_width and custom_height).", call. = FALSE)
       type <- "2x2"
     }
     if (is.null(dims[[type]])) {
-      stop("Wu Lab Error: Unknown type. Choose one of: ", paste(names(dims), collapse = ", "))
+      stop(
+        "Wu Lab Error: Unknown type '", type, "'. Please choose one of the standard types: ",
+        paste(names(dims), collapse = ", "),
+        ", or specify 'custom_width' and 'custom_height' (in cm) if standard dimensions are not suitable."
+      )
     }
     pw <- dims[[type]][1]
     ph <- dims[[type]][2]
@@ -172,6 +178,11 @@ save_wulab <- function(filename = NULL,
 
     gt$widths[panel_cols]  <- grid::unit(pw, "cm")
     gt$heights[panel_rows] <- grid::unit(ph, "cm")
+
+    # Match colorbar legend dimensions to panel size
+    if (isTRUE(match_colorbar)) {
+      gt <- .scale_colorbar_gtable(gt, pw, ph)
+    }
 
     fw <- grid::convertWidth(sum(gt$widths), "cm", valueOnly = TRUE)
     fh <- grid::convertHeight(sum(gt$heights), "cm", valueOnly = TRUE)
@@ -202,3 +213,65 @@ save_wulab <- function(filename = NULL,
   message(sprintf("  - Individual panel size: %s x %s cm", pw, ph))
   message(sprintf("  - Total figure size: %.2f x %.2f cm (Format: %s)", fw, fh, toupper(ext)))
 }
+
+# --- INTERNAL COLORBAR SCALING HELPERS ---
+
+.scale_colorbar_gtable <- function(gt, pw, ph) {
+  gbox_indices <- grep("^guide-box", gt$layout$name)
+  if (length(gbox_indices) == 0) return(gt)
+
+  for (idx in gbox_indices) {
+    gbox_name <- gt$layout$name[idx]
+    gbox <- gt$grobs[[idx]]
+    if (!inherits(gbox, "gtable")) next
+
+    for (i in seq_along(gbox$grobs)) {
+      sub_gt <- gbox$grobs[[i]]
+      if (!inherits(sub_gt, "gtable")) next
+
+      sub_gt <- .process_single_guide_gt(sub_gt, gbox_name, pw, ph)
+      gbox$grobs[[i]] <- sub_gt
+    }
+
+    gt$grobs[[idx]] <- gbox
+  }
+  return(gt)
+}
+
+.process_single_guide_gt <- function(gtbl, gbox_name, pw, ph) {
+  bar_idx <- which(gtbl$layout$name == "bar")
+  if (length(bar_idx) > 0) {
+    bar_row <- gtbl$layout$t[bar_idx]
+    bar_col <- gtbl$layout$l[bar_idx]
+
+    is_vertical <- grepl("right|left", gbox_name) || (length(gtbl$heights) > length(gtbl$widths))
+
+    if (is_vertical) {
+      gtbl$heights[bar_row] <- grid::unit(ph, "cm")
+      top_space <- sum(gtbl$heights[seq_len(bar_row - 1)])
+      bot_rows <- (bar_row + 1):length(gtbl$heights)
+      if (length(bot_rows) > 0) {
+        gtbl$heights[bot_rows[length(bot_rows)]] <- top_space
+      } else {
+        gtbl <- gtable::gtable_add_rows(gtbl, heights = top_space, pos = -1)
+      }
+    } else {
+      gtbl$widths[bar_col] <- grid::unit(pw, "cm")
+      left_space <- sum(gtbl$widths[seq_len(bar_col - 1)])
+      right_cols <- (bar_col + 1):length(gtbl$widths)
+      if (length(right_cols) > 0) {
+        gtbl$widths[right_cols[length(right_cols)]] <- left_space
+      } else {
+        gtbl <- gtable::gtable_add_cols(gtbl, widths = left_space, pos = -1)
+      }
+    }
+  } else {
+    for (j in seq_along(gtbl$grobs)) {
+      if (inherits(gtbl$grobs[[j]], "gtable")) {
+        gtbl$grobs[[j]] <- .process_single_guide_gt(gtbl$grobs[[j]], gbox_name, pw, ph)
+      }
+    }
+  }
+  return(gtbl)
+}
+

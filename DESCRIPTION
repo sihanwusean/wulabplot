@@ -1,13 +1,13 @@
 Package: wulabplot
 Type: Package
 Title: Wu Lab Plotting Standards for Journal Publications
-Version: 0.6.0
+Version: 0.7.0
 Author: Sihan Wu Lab
 Maintainer: Sihan Wu Lab <sihan.wu@utsouthwestern.edu>
 Description: A package for standardized scientific plotting to fit most journal requirements.
 License: MIT
 Encoding: UTF-8
-Imports: ggplot2, grid, gtable, grDevices
+Imports: ggplot2, grid, gtable, grDevices, scales
 URL: https://github.com/sihanwusean/wulabplot
 BugReports: https://github.com/sihanwusean/wulabplot/issues
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
