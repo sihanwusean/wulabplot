@@ -18,9 +18,9 @@
 #' @section Standardized Typography:
 #' \itemize{
 #'   \item \bold{Axis Titles/Text}: 6 pt Arial
-#'   \item \bold{Plot Titles}: 7 pt Arial (centered)
+#'   \item \bold{Plot Titles}: 6 pt Plain Arial (centered)
 #'   \item \bold{Legend Text}: 6 pt Arial
-#'   \item \bold{Facet Strips}: 7 pt Arial
+#'   \item \bold{Facet Strips}: 6 pt Plain Arial
 #' }
 #'
 #' @return A ggplot2 theme object.
@@ -53,7 +53,7 @@ theme_wulab <- function() {
       axis.text = ggplot2::element_text(size = 6, color = "black"),
       legend.text = ggplot2::element_text(size = 6),
       plot.title = ggplot2::element_text(
-        size = 7,
+        size = 6,
         face = "plain",
         hjust = 0.5,
         margin = ggplot2::margin(b = 3.5, unit = "pt")
@@ -75,7 +75,8 @@ theme_wulab <- function() {
       legend.margin = ggplot2::margin(2, 2, 2, 2),
       strip.background = ggplot2::element_blank(),
       strip.text = ggplot2::element_text(
-        size = 7,
+        size = 6,
+        face = "plain",
         margin = ggplot2::margin(b = 2.5, t = 2.5, unit = "pt")
       )
     )
