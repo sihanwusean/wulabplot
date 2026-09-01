@@ -6,7 +6,7 @@ For more layout information, please refer to the `plotting standard.ai` Illustra
 
 ## Features
 
-* **Precision Theme**: `theme_wulab()` implements 6 pt Arial base fonts, 7 pt plain Arial plot titles, perfectly scaled 0.5 pt axis lines, and calibrated title spacing. It removes all background rectangles to provide a transparent background for seamless editing in Adobe Illustrator.
+* **Precision Theme**: `theme_wulab()` implements 6 pt Arial base fonts, perfectly scaled 0.5 pt axis lines, and calibrated title spacing. It removes all background rectangles to provide a transparent background for seamless editing in Adobe Illustrator.
 * **Absolute Panel Sizing & Auto Colorbar Matching**: `save_wulab()` forces figure panels to exact centimeter dimensions, ensuring identical data areas regardless of axis label length or faceting. Automatically scales continuous colorbars to match the exact panel dimension (`match_colorbar = TRUE`).
 * **Color Standards & Continuous Limits**: Built-in scales for qualitative, sequential, high-contrast, and diverging palettes with automatic data-type recognition, zero-anchored diverging midpoints, and continuous `limits` clamping with automatic out-of-bounds squishing (`scales::squish`). Includes `show_wulab_colors()` for a printable Letter-size reference guide.
 
@@ -104,7 +104,7 @@ devtools::install_github("sihanwusean/wulabplot")
 
 ## Technical Standards
 
-* **Typography:** Axis titles/text are set to 6-pt Arial; plot titles are 7-pt Arial (plain face) with calibrated bottom spacing (`margin(b = 3.5, unit = "pt")`).
+* **Typography:** Axis titles/text and plot title are set to 6-pt Arial; plot titles come with calibrated bottom spacing (`margin(b = 3.5, unit = "pt")`).
 
 * **Line Weights:** Axis lines and ticks are precisely calculated using a DPI scaling factor to ensure they appear as exactly 0.5-pt in vector software.
 
@@ -136,7 +136,7 @@ External users are welcome to use the package as-is under the MIT License, but s
 
   * **Continuous Limits & Out-Of-Bounds Handling (`limits`)**: Added the `limits = c(min, max)` parameter to `scale_color_wulab()` and `scale_fill_wulab()`. For continuous scales, out-of-bounds values are automatically squished to the extreme palette colors (`oob = scales::squish`) rather than mapped to missing values. Issues a validation warning if `limits` is passed to discrete scales.
   * **Automatic Colorbar Dimension Matching (`match_colorbar = TRUE`)**: `save_wulab()` now automatically resizes continuous colorbar legends to match the exact dimensions of the data panel (height for vertical colorbars, width for horizontal colorbars) with symmetrical padding balancing, ensuring perfect alignment with the X-Y coordinate bounds without manual configuration.
-  * **Standardized Plain Plot Titles**: Updated `plot.title` in `theme_wulab()` to use `face = "plain"` (7-pt regular Arial, centered) instead of bold font, keeping visual focus on the data.
+  * **Standardized Plain Plot Titles**: Updated `plot.title` in `theme_wulab()` to use `face = "plain"` (6-pt regular Arial, centered) instead of bold font, keeping visual focus on the data.
   * **Enhanced Dimension Error Guidance**: Improved `save_wulab()` error messaging when an unsupported `type` is supplied, explicitly guiding users to choose from standard presets or use `custom_width` and `custom_height` for non-standard plot layouts.
 
 * **Version 0.6.0** - July 31, 2026
