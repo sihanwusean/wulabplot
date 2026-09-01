@@ -114,7 +114,7 @@ devtools::install_github("sihanwusean/wulabplot")
 
 Use `Examples.R` to reproduce the examples below. This plotting style enables (almost) perfect alignment of each X-Y panel.
 
-![Example images for figure panels and layout in Illustrator](./Examples.png)
+![Example images for figure panels and layout in Illustrator](Example_images/Examples.png)
 
 ## Disclaimer
 
