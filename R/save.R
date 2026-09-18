@@ -15,6 +15,7 @@
 #' @param custom_height (Optional) Numeric. Manual height for the panel in cm.
 #' @param dpi (Optional) Numeric. Resolution for raster formats (PNG/TIFF). Default is 300.
 #' @param match_colorbar (Optional) Logical. If \code{TRUE} (default), automatically scales continuous colorbar legends to match the exact panel dimension (height for vertical colorbars, width for horizontal colorbars) with symmetrical alignment.
+#' @param preserve_overflow (Optional) Logical. If \code{TRUE} (default), detects elements exceeding the canvas boundary (such as wide titles or top/bottom legends) and pads outer margins so all elements remain within the artboard for downstream vector editing, while preserving exact data panel dimensions.
 #' @param p Deprecated/Legacy parameter for specifying the plot object. Maintained for backwards compatibility.
 #'
 #' @details
@@ -59,6 +60,7 @@ save_wulab <- function(filename = NULL,
                        custom_height = NULL,
                        dpi = 300,
                        match_colorbar = TRUE,
+                       preserve_overflow = TRUE,
                        p = NULL) {
 
   # 1. Flexible Argument Resolution (Supports filename as 1st arg or plot as 1st arg)
@@ -184,6 +186,11 @@ save_wulab <- function(filename = NULL,
       gt <- .scale_colorbar_gtable(gt, pw, ph)
     }
 
+    # Preserve overflow elements (legends, wide titles) so they remain editable in Illustrator
+    if (isTRUE(preserve_overflow)) {
+      gt <- .pad_overflow_gtable(gt)
+    }
+
     fw <- grid::convertWidth(sum(gt$widths), "cm", valueOnly = TRUE)
     fh <- grid::convertHeight(sum(gt$heights), "cm", valueOnly = TRUE)
   }
@@ -273,5 +280,120 @@ save_wulab <- function(filename = NULL,
     }
   }
   return(gtbl)
+}
+
+# --- INTERNAL OVERFLOW PADDING HELPER ---
+
+.pad_overflow_gtable <- function(gt) {
+  col_widths_cm <- vapply(seq_along(gt$widths), function(j) {
+    grid::convertWidth(gt$widths[j], "cm", valueOnly = TRUE)
+  }, FUN.VALUE = numeric(1))
+  row_heights_cm <- vapply(seq_along(gt$heights), function(j) {
+    grid::convertHeight(gt$heights[j], "cm", valueOnly = TRUE)
+  }, FUN.VALUE = numeric(1))
+
+  col_lefts <- c(0, cumsum(col_widths_cm)[-length(col_widths_cm)])
+  col_rights <- cumsum(col_widths_cm)
+  total_w <- sum(col_widths_cm)
+
+  row_tops <- c(0, cumsum(row_heights_cm)[-length(row_heights_cm)])
+  row_bottoms <- cumsum(row_heights_cm)
+  total_h <- sum(row_heights_cm)
+
+  max_overflow_l <- 0
+  max_overflow_r <- 0
+  max_overflow_t <- 0
+  max_overflow_b <- 0
+
+  # Check all grobs except panel, axis, and background
+  check_indices <- grep("^panel|^axis|^background", gt$layout$name, invert = TRUE)
+
+  for (i in check_indices) {
+    g <- gt$grobs[[i]]
+    if (is.null(g) || inherits(g, "zeroGrob")) next
+
+    # Measure width
+    gw <- 0
+    if (inherits(g, "gtable")) {
+      if (!is.null(g$vp$width) && inherits(g$vp$width, "unit")) {
+        gw <- grid::convertWidth(g$vp$width, "cm", valueOnly = TRUE)
+      } else {
+        valid_w <- !grepl("null|npc", grid::unitType(g$widths))
+        if (any(valid_w)) gw <- grid::convertWidth(sum(g$widths[valid_w]), "cm", valueOnly = TRUE)
+      }
+    } else if (inherits(g, "titleGrob") && length(g$children) > 0) {
+      gw <- grid::convertWidth(grid::grobWidth(g$children[[1]]), "cm", valueOnly = TRUE)
+    } else {
+      gw <- tryCatch(grid::convertWidth(grid::grobWidth(g), "cm", valueOnly = TRUE), error = function(e) 0)
+    }
+
+    # Measure height
+    gh <- 0
+    if (inherits(g, "gtable")) {
+      if (!is.null(g$vp$height) && inherits(g$vp$height, "unit")) {
+        gh <- grid::convertHeight(g$vp$height, "cm", valueOnly = TRUE)
+      } else {
+        valid_h <- !grepl("null|npc", grid::unitType(g$heights))
+        if (any(valid_h)) gh <- grid::convertHeight(sum(g$heights[valid_h]), "cm", valueOnly = TRUE)
+      }
+    } else if (inherits(g, "titleGrob") && length(g$children) > 0) {
+      gh <- grid::convertHeight(grid::grobHeight(g$children[[1]]), "cm", valueOnly = TRUE)
+    } else {
+      gh <- tryCatch(grid::convertHeight(grid::grobHeight(g), "cm", valueOnly = TRUE), error = function(e) 0)
+    }
+
+    l_col <- gt$layout$l[i]
+    r_col <- gt$layout$r[i]
+    cell_l <- col_lefts[l_col]
+    cell_r <- col_rights[r_col]
+    cell_mid_x <- (cell_l + cell_r) / 2
+
+    # Check horizontal bounds
+    if (gw > (cell_r - cell_l)) {
+      hjust <- 0.5
+      if (inherits(g, "titleGrob") && length(g$children) > 0 && !is.null(g$children[[1]]$hjust)) {
+        hjust <- as.numeric(g$children[[1]]$hjust)
+      }
+      grob_l <- cell_mid_x - hjust * gw
+      grob_r <- cell_mid_x + (1 - hjust) * gw
+      if (grob_l < 0) max_overflow_l <- max(max_overflow_l, -grob_l)
+      if (grob_r > total_w) max_overflow_r <- max(max_overflow_r, grob_r - total_w)
+    }
+
+    t_row <- gt$layout$t[i]
+    b_row <- gt$layout$b[i]
+    cell_t <- row_tops[t_row]
+    cell_b <- row_bottoms[b_row]
+    cell_mid_y <- (cell_t + cell_b) / 2
+
+    # Check vertical bounds
+    if (gh > (cell_b - cell_t)) {
+      vjust <- 0.5
+      if (inherits(g, "titleGrob") && length(g$children) > 0 && !is.null(g$children[[1]]$vjust)) {
+        vjust <- as.numeric(g$children[[1]]$vjust)
+      }
+      grob_t <- cell_mid_y - (1 - vjust) * gh
+      grob_b <- cell_mid_y + vjust * gh
+      if (grob_t < 0) max_overflow_t <- max(max_overflow_t, -grob_t)
+      if (grob_b > total_h) max_overflow_b <- max(max_overflow_b, grob_b - total_h)
+    }
+  }
+
+  # Safety margin of 0.05 cm if overflow occurs
+  buffer <- 0.05
+  if (max_overflow_l > 0.01) {
+    gt <- gtable::gtable_add_cols(gt, widths = grid::unit(max_overflow_l + buffer, "cm"), pos = 0)
+  }
+  if (max_overflow_r > 0.01) {
+    gt <- gtable::gtable_add_cols(gt, widths = grid::unit(max_overflow_r + buffer, "cm"), pos = -1)
+  }
+  if (max_overflow_t > 0.01) {
+    gt <- gtable::gtable_add_rows(gt, heights = grid::unit(max_overflow_t + buffer, "cm"), pos = 0)
+  }
+  if (max_overflow_b > 0.01) {
+    gt <- gtable::gtable_add_rows(gt, heights = grid::unit(max_overflow_b + buffer, "cm"), pos = -1)
+  }
+
+  return(gt)
 }
 

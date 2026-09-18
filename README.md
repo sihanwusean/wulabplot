@@ -7,8 +7,8 @@ For more layout information, please refer to the `plotting standard.ai` Illustra
 ## Features
 
 * **Precision Theme**: `theme_wulab()` implements 6 pt Arial base fonts, perfectly scaled 0.5 pt axis lines, and calibrated title spacing. It removes all background rectangles to provide a transparent background for seamless editing in Adobe Illustrator.
-* **Absolute Panel Sizing & Auto Colorbar Matching**: `save_wulab()` forces figure panels to exact centimeter dimensions, ensuring identical data areas regardless of axis label length or faceting. Automatically scales continuous colorbars to match the exact panel dimension (`match_colorbar = TRUE`).
-* **Color Standards & Continuous Limits**: Built-in scales for qualitative, sequential, high-contrast, and diverging palettes with automatic data-type recognition, zero-anchored diverging midpoints, and continuous `limits` clamping with automatic out-of-bounds squishing (`scales::squish`). Includes `show_wulab_colors()` for a printable Letter-size reference guide.
+* **Absolute Panel Sizing, Auto Colorbar & Overflow Preservation**: `save_wulab()` forces figure panels to exact centimeter dimensions, ensuring identical data areas regardless of axis label length or faceting. Automatically scales continuous colorbars (`match_colorbar = TRUE`) and preserves overflowing legends and titles within the PDF artboard (`preserve_overflow = TRUE`) for downstream editing in Illustrator.
+* **3-Tier Qualitative & Gradient Standards**: Features an expanded 3-tier qualitative system (18 swatches: Deep, Mid, Light) for hierarchical multi-level experiments, alongside sequential, high-contrast, diverging, and UMAP palettes. Includes automatic data-type recognition, zero-anchored diverging midpoints, continuous `limits` squishing, and `show_wulab_colors()` for a printable Letter-size guide.
 
 ## Installation
 
@@ -70,16 +70,21 @@ devtools::install_github("sihanwusean/wulabplot")
     show_wulab_colors("wulab_colors.pdf")
 
     # Individual palette reference visualizers:
-    # 12 paired colors (Chinese aesthetics) + 3 background greys
-    show_color_qualitative()
+    # 18-color 3-tier qualitative palette (Deep, Mid, Light) + 3 background greys
+    show_color_qualitative() # defaults to type = "trio" (all 18 colors)
+    show_color_qualitative(type = "mid")  # or "deep", "light", "pair"
 
     # Standard sequential gradient: Creamy Avocado (#d9ed92) to Moroccan Blue (#184e77) via Teal (#52b69a)
-    show_color_sequential(n = 9)
+    show_color_sequential(n = 9, type = "teal") # or show_color_sequential("teal")
 
-    # High-contrast sequential gradient: Pure White (#ffffff) to Moroccan Blue (#184e77), ideal for heatmaps
-    show_color_sequential_hc()
+    # Warm sequential gradient: Buttercup (#fee08b) to Deep Plum (#4a0e2e) via Viva Magenta (#bb2649)
+    show_color_sequential(n = 9, type = "magenta")
 
-    # Diverging gradient: Orange-red (#bb3e03) to Blue-cyan (#0380bb) with a White (#ffffff) midpoint
+    # High-contrast sequential gradients: Pure White (#ffffff) baseline for unidirectional heatmaps
+    show_color_sequential_hc(type = "teal")
+    show_color_sequential_hc(type = "magenta")
+
+    # Diverging gradient: Burnt-orange (#b03300) to Deep-blue (#026294) with a White (#ffffff) midpoint (symmetrical depth L* = 40.8)
     show_color_diverging(n = 9)
 
     # Sasha Trubetskoy's 20-color palette, optimized for high-contrast UMAP cluster visualization.
@@ -91,14 +96,18 @@ devtools::install_github("sihanwusean/wulabplot")
    See more examples in `Examples.R`.
 
    ```r
-   # Choose from qualitative-pair, qualitative-deep, qualitative-light, sequential, 
-   # sequential-highcontrast (or sequential-hc), diverging, and umap.
+   # Choose from qualitative-deep, qualitative-mid, qualitative-light, qualitative-pair, 
+   # qualitative-trio, sequential (or sequential-teal), sequential-hc (or sequential-teal-hc),
+   # sequential-magenta, sequential-magenta-hc, diverging, and umap.
    # Automatically detects discrete factors/characters vs continuous numeric vectors.
    # Supports midpoint anchoring and continuous limits with automatic out-of-bounds squishing.
 
    scale_fill_wulab(type = "qualitative-light") 
    scale_color_wulab(type = "qualitative-deep")
-   scale_fill_wulab(type = "sequential-hc", limits = c(0, 100)) # High-contrast heatmap palette
+   scale_color_wulab(type = "qualitative-mid")  # Intermediate balanced tones
+   scale_fill_wulab(type = "qualitative-trio")  # 18 colors interleaved by hue (WT / HET / KO)
+   scale_fill_wulab(type = "sequential-hc", limits = c(0, 100)) # Default teal high-contrast heatmap palette
+   scale_fill_wulab(type = "sequential-magenta", limits = c(0, 100)) # Warm viva-magenta gradient
    scale_fill_wulab(type = "diverging", midpoint = 0, limits = c(-2, 2)) # Zero-anchored continuous scale
    ```
 
@@ -129,6 +138,19 @@ Use `Examples.R` to reproduce the examples below. This plotting style enables (a
 External users are welcome to use the package as-is under the MIT License, but should do so with the understanding that it is a specialized tool for our specific research context.
 
 ## Changelog
+
+* **Version 0.8.0** - September 17, 2026
+
+  **New Features & Enhancements**:
+
+  * **Qualitative 3-Tier Palette Expansion (18 Colors)**: Expanded the lab's signature qualitative color system from a 2-tier system (12 colors) into a comprehensive 3-tier system (18 colors: Deep, Mid, Light). Introduces 6 intermediate mid-tier tones (Red `#ef7a82`, Blue `#1e9eb3`, Green `#9bb853`, Orange `#ffa631`, Purple `#ba79b1`, Slate `#75878a`) optimized for perceptual uniformity and visual harmony via CIELAB/HCL metrics.
+  * **New Palette Types (`qualitative-mid` & `qualitative-trio`)**: Added `type = "qualitative-mid"` (6 intermediate shades) and `type = "qualitative-trio"` (18 colors interleaved by hue: Deep, Mid, Light) for multi-level hierarchical groupings (e.g. WT / HET / KO, Day 0 / Day 3 / Day 7). Fully maintains 100% backwards compatibility for `qualitative-deep`, `qualitative-light`, and `qualitative-pair`.
+  * **Preserve Canvas Overflow Elements (`preserve_overflow = TRUE`)**: Fixed element clipping in `save_wulab()`. Elements exceeding the calculated figure boundary (such as wide titles, subtitles, or expansive top/bottom legends) now have outer padding automatically added to the figure margins so they remain fully editable within the Illustrator artboard without clipping, while strictly preserving requested data panel dimensions (e.g. exactly 2.0 x 2.0 cm).
+  * **Updated Reference Poster (`show_wulab_colors()`)**: Re-rendered the Letter-size (8.5 x 11 in) lab color guide to showcase all 18 qualitative swatches in a 3-row layout (Deep, Mid, Light) with individual HEX codes, labels, and usage guidance.
+  * **Enhanced `show_color_qualitative()`**: Now displays the 18-color 3-tier system by default (`type = "trio"`), with selective tier inspection options for `"pair"`, `"deep"`, `"mid"`, and `"light"`.
+  * **Symmetrical High-Contrast Diverging Palette**: Upgraded the diverging palette from `#bb3e03` / `#0380bb` to Burnt-orange (`#b03300`) and Deep-blue (`#026294`) around a pure White (`#ffffff`) midpoint. Eliminates the previous luminance imbalance ($\Delta L^* = 6.4 \to 0.0$ at $L^* = 40.8$), ensuring positive and negative fold-changes carry identical visual prominence on screens and print.
+  * **Viva Magenta Sequential Palette & Future-Proof Aliases**: Introduced a warm, high-chroma sequential palette family inspired by Pantone 2023 Viva Magenta: `sequential-magenta` (Buttercup `#fee08b` $\to$ Viva Magenta `#bb2649` $\to$ Deep Plum `#4a0e2e`) and its pure white-baseline variant `sequential-magenta-hc`. Viva Magenta acts as a high-chroma bridge ($C^* = 61.8$) preventing muddy midtones. Added future-proof aliases for the default cool sequential palette (`sequential-teal`, `sequential-teal-hc`, `teal`, `teal-hc`) while retaining 100% backwards compatibility for `sequential` and `sequential-hc`.
+  * **Updated Reference Poster Layout**: The unified Letter-size guide (`show_wulab_colors()`) now cleanly displays both Sequential Teal and Sequential Magenta (each with standard continuous gradient, high-contrast gradient, and 9 discrete bins) alongside the qualitative 3-tier, UMAP 20-color, background greys, and symmetrical diverging palettes.
 
 * **Version 0.7.0** - September 1, 2026
 
