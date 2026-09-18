@@ -125,6 +125,10 @@ Use `Examples.R` to reproduce the examples below. This plotting style enables (a
 
 ![Example images for figure panels and layout in Illustrator](Example_images/Examples.jpg)
 
+The standardized color palettes `show_wulab_colors()` since version 0.8.0 are shown as below.
+
+![Images for color palettes](Example_images/wulab_palettes_v0.8.0.png)
+
 ## Disclaimer
 
 `wulabplot` is an internal side project developed by the Wu Lab (mostly by the PI at the moment) to ensure a consistent visual identity across our research publications.
