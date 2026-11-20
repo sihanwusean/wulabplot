@@ -14,11 +14,11 @@
 \usage{
 show_wulab_colors(filename = NULL, dpi = 300)
 
-show_color_qualitative()
+show_color_qualitative(type = "trio")
 
-show_color_sequential(n = 9)
+show_color_sequential(n = 9, type = c("teal", "magenta"))
 
-show_color_sequential_hc(n = 9)
+show_color_sequential_hc(n = 9, type = c("teal", "magenta"))
 
 show_color_diverging(n = 9)
 
@@ -51,12 +51,12 @@ scale_fill_wulab(
 
 \item{dpi}{(Optional) Numeric. Resolution for raster exports (default = 300).}
 
-\item{n}{(Required) Numeric. Number of colors to display (default = 9).}
-
 \item{type}{(Required) Character. The palette to use: \code{"qualitative-deep"} (default for color),
-\code{"qualitative-light"} (default for fill), \code{"qualitative-pair"},
-\code{"sequential"}, \code{"sequential-highcontrast"} (or \code{"sequential-hc"}),
-\code{"diverging"}, or \code{"umap"}.}
+\code{"qualitative-mid"}, \code{"qualitative-light"} (default for fill), \code{"qualitative-pair"},
+\code{"qualitative-trio"}, \code{"sequential"} (or \code{"sequential-teal"}), \code{"sequential-hc"} (or \code{"sequential-teal-hc"}),
+\code{"sequential-magenta"}, \code{"sequential-magenta-hc"}, \code{"diverging"}, or \code{"umap"}.}
+
+\item{n}{(Required) Numeric. Number of colors to display (default = 9).}
 
 \item{discrete}{(Optional) Logical or NULL. If \code{NULL} (default), automatically detects whether data is discrete or continuous. Use \code{TRUE} for factors/characters or \code{FALSE} for continuous gradients.}
 
@@ -89,18 +89,26 @@ ggplot2 object.
 \section{Palettes included}{
 
 \itemize{
+  \item \bold{qualitative-deep}: The 6 deep shades from the 3-tier system.
+  Best for points, lines, and primary categorical groups.
+  \item \bold{qualitative-mid}: The 6 intermediate shades from the 3-tier system.
+  Best for secondary conditions or balanced visual prominence.
+  \item \bold{qualitative-light}: The 6 lighter shades from the 3-tier system.
+  Best for bar fills, violin areas, and shaded distributions.
   \item \bold{qualitative-pair}: 12 paired colors (Deep/Light pairs) inspired
   by traditional Chinese aesthetics.
-  \item \bold{qualitative-deep}: The 6 deeper shades (odd positions) from
-  the paired palette. Best for points and lines.
-  \item \bold{qualitative-light}: The 6 lighter shades (even positions) from
-  the paired palette. Best for bar fills and violin areas.
-  \item \bold{sequential}: A Creamy Avocado (#d9ed92) to Moroccan Blue (#184e77)
+  \item \bold{qualitative-trio}: 18 colors interleaved by hue (Deep, Mid, Light)
+  for multi-level hierarchical groupings (e.g. WT / HET / KO).
+  \item \bold{sequential} (or \bold{sequential-teal}): A Creamy Avocado (#d9ed92) to Moroccan Blue (#184e77)
   gradient for serial discrete data.
-  \item \bold{sequential-highcontrast} (or \bold{sequential-hc}): A White (#ffffff)
+  \item \bold{sequential-highcontrast} (or \bold{sequential-hc}, \bold{sequential-teal-hc}): A White (#ffffff)
   to Moroccan Blue (#184e77) high-contrast gradient for unidirectional heatmaps and continuous data.
-  \item \bold{diverging}: An Orange-red (#bb3e03) to Blue-cyan (#0380bb)
-  transition via a White (#ffffff) midpoint.
+  \item \bold{sequential-magenta}: A Buttercup (#fee08b) to Deep Plum (#4a0e2e) via Viva Magenta (#bb2649)
+  gradient for warm, high-contrast serial data.
+  \item \bold{sequential-magenta-hc}: A White (#ffffff) to Deep Plum (#4a0e2e) via Viva Magenta (#bb2649)
+  gradient for unidirectional heatmaps with a pure white baseline.
+  \item \bold{diverging}: A Burnt-orange (#b03300) to Deep-blue (#026294)
+  transition via a White (#ffffff) midpoint, providing symmetrical depth and high dynamic range.
   \item \bold{umap}: Sasha Trubetskoy's 20-color palette, optimized for
   high-contrast UMAP cluster visualization (e.g., Seurat/Scanpy).
 }

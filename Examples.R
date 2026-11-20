@@ -111,5 +111,29 @@ p_hm <- ggplot(df_hm, aes(x = Sample, y = Gene, fill = Expression)) +
   )
 save_wulab(p_hm, type = "2x2", filename = "Example_images/Example 7.pdf")
 
+# --- Example 8: 3-Tier Qualitative Hierarchical Comparison ---
+df_trio <- data.frame(
+  Group = factor(c("WT-1", "HET-1", "KO-1", "WT-2", "HET-2", "KO-2"),
+                 levels = c("WT-1", "HET-1", "KO-1", "WT-2", "HET-2", "KO-2")),
+  Expression = c(2.1, 4.3, 7.8, 1.9, 3.8, 6.5)
+)
+p_trio <- ggplot(df_trio, aes(x = Group, y = Expression, fill = Group)) +
+  geom_col(color = "black", linewidth = 0.2, width = 0.7) +
+  scale_fill_wulab(type = "qualitative-trio") +
+  labs(title = "Example 8", x = NULL, y = "Relative Expression") +
+  theme_wulab() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none")
+save_wulab(p_trio, type = "2.58x2", filename = "Example_images/Example 8.pdf")
 
-
+# --- Example 9: Viva Magenta Warm Sequential Gradient ---
+df_mag <- data.frame(
+  Dose = seq(0, 10, length.out = 100),
+  Signal = (1 / (1 + exp(-(seq(-3, 3, length.out = 100))))) * 10
+)
+p_mag <- ggplot(df_mag, aes(x = Dose, y = Signal, color = Signal)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 1.0) +
+  scale_color_wulab(type = "sequential-magenta", limits = c(0, 10)) +
+  labs(title = "Example 9", x = "Dose (uM)", y = "Response (%)") +
+  theme_wulab()
+save_wulab(p_mag, type = "2x2", filename = "Example_images/Example 9.pdf")
